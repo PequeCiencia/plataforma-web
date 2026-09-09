@@ -214,19 +214,19 @@ export const EXPERIMENTOS_INICIALES = [
         subtitulo: 'Introducción al átomo, protones y electrones en movimiento.',
         texto: 'La materia está compuesta por átomos con cargas positivas y negativas. Cuando los electrones se transfieren de un cuerpo a otro, se genera un desequilibrio eléctrico conocido como electricidad estática.',
         duracion: '00:15',
-        videoUrl: './assets/videos/papelitos/escena_1.mp4',
+        videoUrl: './instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_1.mp4',
         subtitulos: 'Descubre cómo los electrones se transfieren creando fuerzas de atracción electrostática.'
       },
       {
         id: 2,
         numero: 2,
-        categoria: 'Materiales',
-        categoriaColor: '#ffc936',
+        categoria: 'Alistamiento',
+        categoriaColor: '#38bdf8',
         titulo: 'Verificación de Reactivos y Equipos',
         subtitulo: 'Revisión de elementos en la estación de laboratorio.',
         texto: 'Asegúrate de contar con papel de colores cortado finamente, la barra o tubo de fricción y el paño activador sobre la mesa de trabajo.',
         duracion: '00:15',
-        videoUrl: './assets/videos/papelitos/escena_2.mp4',
+        videoUrl: './instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_2.mp4',
         subtitulos: 'Comprueba cada material en tu estación de trabajo antes de iniciar la práctica.'
       },
       {
@@ -238,7 +238,7 @@ export const EXPERIMENTOS_INICIALES = [
         subtitulo: 'Dispersión uniforme de confeti de papel en mesa plana.',
         texto: 'Esparce los papelitos de colores en una capa fina sobre la mesa sin apilarlos para facilitar su interacción con el campo electrostático.',
         duracion: '00:15',
-        videoUrl: './assets/videos/papelitos/escena_3.mp4',
+        videoUrl: './instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_3.mp4',
         subtitulos: 'Distribuye los trocitos de papel para que reaccionen libremente al campo de fuerza.'
       },
       {
@@ -250,7 +250,7 @@ export const EXPERIMENTOS_INICIALES = [
         subtitulo: 'Frotamiento enérgico y unidireccional del material aislante.',
         texto: 'Frota la regla o tubo con el paño de lana de forma constante durante 15 a 20 segundos para arrancar electrones y cargar negativamente la superficie.',
         duracion: '00:15',
-        videoUrl: './assets/videos/papelitos/escena_4.mp4',
+        videoUrl: './instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_4.mp4',
         subtitulos: 'Frota con energía para cargar de electrones la barra plástica.'
       },
       {
@@ -262,7 +262,7 @@ export const EXPERIMENTOS_INICIALES = [
         subtitulo: 'Aproximación lenta a 2 centímetros de los papelitos.',
         texto: 'Acerca suavemente el extremo cargado a los papelitos sin tocarlos. Observa cómo saltan y se adhieren desafiando la gravedad terrestre.',
         duracion: '00:15',
-        videoUrl: './assets/videos/papelitos/escena_5.mp4',
+        videoUrl: './instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_5.mp4',
         subtitulos: '¡Observa la danza de los papelitos saltando hacia la barra cargada!'
       },
       {
@@ -274,7 +274,7 @@ export const EXPERIMENTOS_INICIALES = [
         subtitulo: 'Intercambio de carga por contacto y repulsión posterior.',
         texto: 'Nota cómo algunos papelitos se repelen tras hacer contacto. Al tocar la barra, reciben la misma carga y son expulsados.',
         duracion: '00:15',
-        videoUrl: './assets/videos/papelitos/escena_6.mp4',
+        videoUrl: './instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_6.mp4',
         subtitulos: 'Al tocar la barra, los papelitos adquieren igual carga y se repelen.'
       },
       {
@@ -286,326 +286,8 @@ export const EXPERIMENTOS_INICIALES = [
         subtitulo: 'Aplicación en filtros de aire industriales y fotocopiadoras.',
         texto: 'La fuerza electrostática descubierta es el principio con el que funcionan las impresoras láser, los filtros precipitadores de humo en fábricas y los paneles solares autolimpiables.',
         duracion: '00:15',
-        videoUrl: './assets/videos/papelitos/escena_7.mp4',
+        videoUrl: './instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_7.mp4',
         subtitulos: '¡Misión cumplida! Has dominado el principio electrostático fundamental.'
-      }
-    ]
-  },
-  {
-    id: 'exp-densidades',
-    titulo: 'Arcoíris de Densidades',
-    subtitulo: 'Columna de líquidos, masa, volumen y tensión superficial',
-    categoria: 'Física & Química',
-    personajeId: 'electra',
-    nivel: '10 a 18 años',
-    tiempoMinutos: 30,
-    descripcion: 'Aprende la relación fundamental entre masa, volumen y densidad creando una fascinante columna de líquidos en capas multicolores que no se mezclan.',
-    hipotesis: '¿Por qué líquidos con diferente masa y volumen no se mezclan y se ordenan en capas estables sin juntarse?',
-    explicacionCientifica: 'La densidad es la relación entre la masa de un cuerpo y el volumen que ocupa (D = m/V). Los líquidos más densos (como la miel) tienen mayor masa por unidad de volumen y se van al fondo, mientras que los menos densos (como el alcohol) flotan en la superficie.',
-    materiales: [
-      '50 ml de Miel de abeja pura o jarabe de maíz',
-      '50 ml de Jabón líquido concentrado para platos (verde o azul)',
-      '50 ml de Agua destilada o potable con colorante vegetal',
-      '50 ml de Aceite vegetal de cocina',
-      '50 ml de Alcohol etílico o isopropílico teñido',
-      '1 Probeta graduada de 250 ml o vaso cilíndrico de vidrio alto',
-      '2 Goteros o jeringas dosificadoras sin aguja',
-      '1 Par de gafas de protección y guantes de látex'
-    ],
-    pasos: [
-      {
-        id: 1,
-        numero: 1,
-        categoria: 'Conceptos',
-        categoriaColor: '#2ce4ff',
-        titulo: '¿Por qué se forman capas?',
-        subtitulo: 'Comprende la relación entre masa, volumen y densidad.',
-        texto: 'La densidad es una propiedad intrínseca de la materia. Si dos líquidos tienen el mismo volumen pero diferente masa, el más pesado descenderá por efecto de la gravedad hacia el fondo.',
-        duracion: '00:28',
-        videoUrl: '',
-        subtitulos: 'Comprende la relación entre masa, volumen y densidad.'
-      },
-      {
-        id: 2,
-        numero: 2,
-        categoria: 'Materiales',
-        categoriaColor: '#ffc936',
-        titulo: 'Materiales y cantidades',
-        subtitulo: 'Verificación del equipo y reactivos en mesa.',
-        texto: 'Revisa en tu estación de trabajo que cuentes con: miel (50ml), jabón líquido (50ml), agua con colorante (50ml), aceite vegetal (50ml), alcohol (50ml), probeta y goteros.',
-        duracion: '00:35',
-        videoUrl: '',
-        subtitulos: 'Comprueba cada material en tu estación de laboratorio antes de iniciar el montaje.'
-      },
-      {
-        id: 3,
-        numero: 3,
-        categoria: 'Montaje',
-        categoriaColor: '#ff8a55',
-        titulo: 'Preparar las soluciones',
-        subtitulo: 'Medición precisa y dosificación de 50 ml por reactivo.',
-        texto: 'Mide en vasos separados exactamente 50 ml de cada sustancia. Añade 2 gotas de colorante azul al agua y 2 gotas de colorante rojo al alcohol para contrastar visualmente.',
-        duracion: '00:40',
-        videoUrl: '',
-        subtitulos: 'Mide 50 ml de cada líquido y tiñe las fases con colorantes diferentes.'
-      },
-      {
-        id: 4,
-        numero: 4,
-        categoria: 'Montaje',
-        categoriaColor: '#ff8a55',
-        titulo: 'Construir las capas',
-        subtitulo: 'Vierte suavemente cada sustancia por la pared interior.',
-        texto: 'Vierte primero la miel en el centro del fondo. Luego añade el jabón despacio. Con el gotero pegado a la pared del vaso inclinado, vierte el agua, luego el aceite y por último el alcohol.',
-        duracion: '00:45',
-        videoUrl: '',
-        subtitulos: 'Inclina la probeta y vierte muy despacio por la pared interior.'
-      },
-      {
-        id: 5,
-        numero: 5,
-        categoria: 'Observación',
-        categoriaColor: '#af78ff',
-        titulo: 'Observar los límites',
-        subtitulo: 'Inspecciona la interfase y menisco entre las distintas fases.',
-        texto: 'Ilumina la probeta con una linterna. Observa cómo las líneas de separación (meniscos e interfases) se mantienen estables y nítidas gracias a la tensión superficial y densidad.',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: 'Observa las interfaces de separación nítidas entre los 5 líquidos.'
-      },
-      {
-        id: 6,
-        numero: 6,
-        categoria: 'Medición',
-        categoriaColor: '#54e4a4',
-        titulo: 'Comparar las concentraciones',
-        subtitulo: 'Prueba de densidad y flotabilidad con sólidos patrón.',
-        texto: 'Deja caer con cuidado una tuerca metálica, una uva fresca, una tapa de plástico y un trozo de corcho. Registra en tu bitácora en qué capa se detiene cada objeto según su densidad.',
-        duracion: '00:35',
-        videoUrl: '',
-        subtitulos: 'Introduce objetos sólidos y descubre en qué capa de densidad flotan.'
-      },
-      {
-        id: 7,
-        numero: 7,
-        categoria: 'Resultados',
-        categoriaColor: '#7ce36a',
-        titulo: 'Ordenar por densidad',
-        subtitulo: 'Conclusiones finales: escala de densidad volumétrica (g/cm³).',
-        texto: 'Orden de mayor a menor densidad: Miel (1.42 g/cm³) > Jabón (1.06 g/cm³) > Agua (1.00 g/cm³) > Aceite (0.92 g/cm³) > Alcohol (0.79 g/cm³). ¡Misión de ingeniería completada!',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: '¡Excelente! Has dominado el principio de densidad aplicado a la ingeniería.'
-      }
-    ]
-  },
-  {
-    id: 'exp-circuito',
-    titulo: 'Circuito Luminoso con Masa Conductora',
-    subtitulo: 'Flujo de electrones, ánodos, cátodos y fuentes de energía',
-    categoria: 'Robótica & Electricidad',
-    personajeId: 'astro',
-    nivel: '10 a 16 años',
-    tiempoMinutos: 35,
-    descripcion: 'Modela pistas de masa con electrolitos salinos y enciende diodos LED de colores comprendiendo circuitos cerrados y polaridad.',
-    hipotesis: '¿Puede una masa con electrolitos salinos conducir corriente eléctrica continua suficiente para encender luces LED?',
-    explicacionCientifica: 'La sal disuelta (NaCl) libera iones Na+ y Cl- que actúan como portadores de carga eléctrica en el agua de la masa, permitiendo cerrar el circuito eléctrico.',
-    materiales: [
-      '2 Barras de masa conductora con sal (electrolito)',
-      '1 Barra de masa aislante con azúcar (dieléctrico)',
-      '4 Diodos LED ultrabrillantes de 5mm (rojo, verde, azul)',
-      '1 Portapilas 3V (2 pilas AA de 1.5V) con cables caimán',
-      '1 Interruptor de palanca para prototipo'
-    ],
-    pasos: [
-      {
-        id: 1,
-        numero: 1,
-        categoria: 'Conceptos',
-        categoriaColor: '#2ce4ff',
-        titulo: '¿Cómo viaja la electricidad?',
-        subtitulo: 'Flujo continuo de electrones y circuitos cerrados.',
-        texto: 'Los electrones requieren un trayecto conductor ininterrumpido desde el polo negativo hacia el positivo de la fuente.',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: 'Los electrones necesitan un camino continuo para fluir y encender los componentes.'
-      },
-      {
-        id: 2,
-        numero: 2,
-        categoria: 'Materiales',
-        categoriaColor: '#ffc936',
-        titulo: 'Componentes y seguridad',
-        subtitulo: 'Verificación de fuentes de 3V y polaridades LED.',
-        texto: 'Revisa las dos masas, los diodos LED y el portapilas de 3V asegurando que no haya cables pelados que generen cortocircuito.',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: 'Verifica los componentes eléctricos en tu mesa de trabajo.'
-      },
-      {
-        id: 3,
-        numero: 3,
-        categoria: 'Montaje',
-        categoriaColor: '#ff8a55',
-        titulo: 'Modelado de pistas conductoras',
-        subtitulo: 'Creación de dos pistas paralelas separadas por aislante.',
-        texto: 'Modela dos cilindros de masa conductora paralelos separados por 2 cm. Coloca una barrera de masa aislante dulce en medio.',
-        duracion: '00:40',
-        videoUrl: '',
-        subtitulos: 'Forma dos pistas conductoras separadas por una barrera aislante.'
-      },
-      {
-        id: 4,
-        numero: 4,
-        categoria: 'Montaje',
-        categoriaColor: '#ff8a55',
-        titulo: 'Conexión de terminales',
-        subtitulo: 'Inserción de cables positivo (rojo) y negativo (negro).',
-        texto: 'Inserta el caimán rojo en la pista izquierda (ánodo) y el caimán negro en la pista derecha (cátodo).',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: 'Conecta el cable rojo en la pista positiva y el negro en la negativa.'
-      },
-      {
-        id: 5,
-        numero: 5,
-        categoria: 'Observación',
-        categoriaColor: '#af78ff',
-        titulo: 'Polaridad del LED',
-        subtitulo: 'Inserción del diodo con pata larga (+) y pata corta (-).',
-        texto: 'Inserta la pata larga del LED en la pista positiva y la pata corta en la negativa. ¡Observa el brillo!',
-        duracion: '00:35',
-        videoUrl: '',
-        subtitulos: 'Coloca el LED respetando la polaridad: pata larga al positivo.'
-      },
-      {
-        id: 6,
-        numero: 6,
-        categoria: 'Medición',
-        categoriaColor: '#54e4a4',
-        titulo: 'Circuitos en Serie vs Paralelo',
-        subtitulo: 'Comportamiento del voltaje y corriente con varios LEDs.',
-        texto: 'Añade 2 LEDs más en paralelo y luego prueba conectarlos en serie. Mide cómo varía la intensidad lumínica.',
-        duracion: '00:40',
-        videoUrl: '',
-        subtitulos: 'Comprueba la diferencia de brillo en conexiones serie y paralelo.'
-      },
-      {
-        id: 7,
-        numero: 7,
-        categoria: 'Resultados',
-        categoriaColor: '#7ce36a',
-        titulo: 'Conclusiones electrónicas',
-        subtitulo: 'Validación del método de prototipado rápido con plastilina.',
-        texto: 'Los iones salinos permitieron conducir la corriente demostrando principios básicos de circuitos impresos y robótica.',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: '¡Excelente trabajo! Has construido tu primer circuito con tecnología modular.'
-      }
-    ]
-  },
-  {
-    id: 'exp-cohete',
-    titulo: 'Cohete de Propulsión Química',
-    subtitulo: 'Leyes de Newton, generación de CO2 y empuje aerodinámico',
-    categoria: 'Aeroespacial & Física',
-    personajeId: 'cosmo',
-    nivel: '10 a 18 años',
-    tiempoMinutos: 30,
-    descripcion: 'Diseña un cohete a reacción con cámara de presión efervescente aplicando la Tercera Ley de Newton para lograr un despegue vertical.',
-    hipotesis: '¿La acumulación rápida de gas CO2 presurizado dentro de una cámara cerrada generará empuje suficiente para vencer la gravedad?',
-    explicacionCientifica: 'El bicarbonato y el ácido acético reaccionan liberando gas que comprime el aire interior. Al liberarse súbitamente la tapa, el gas empuja hacia abajo con igual fuerza propulsando el cohete hacia arriba (Acción y Reacción).',
-    materiales: [
-      '1 Cámara de lanzamiento sellada (recipiente hermético)',
-      '1 Pastilla efervescente o 20g de bicarbonato + 30ml vinagre',
-      'Agua tibia (20 ml)',
-      'Plantilla de aletas estabilizadoras de cartulina plastificada',
-      'Gafas de seguridad obligatorias'
-    ],
-    pasos: [
-      {
-        id: 1,
-        numero: 1,
-        categoria: 'Conceptos',
-        categoriaColor: '#2ce4ff',
-        titulo: 'Tercera Ley de Newton',
-        subtitulo: 'Principio de acción y reacción en vehículos espaciales.',
-        texto: 'Toda acción genera una reacción de igual magnitud pero en sentido opuesto. El gas expulsado genera el vector de empuje vertical.',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: 'Comprende el principio de acción y reacción en el vuelo de cohetes.'
-      },
-      {
-        id: 2,
-        numero: 2,
-        categoria: 'Materiales',
-        categoriaColor: '#ffc936',
-        titulo: 'Materiales de lanzamiento',
-        subtitulo: 'Revisión de la cámara y combustible químico seguro.',
-        texto: 'Comprueba el tubo hermético, las aletas, el combustible reactivo y el equipo de protección para el equipo de vuelo.',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: 'Revisa la cámara de presión y los elementos de seguridad.'
-      },
-      {
-        id: 3,
-        numero: 3,
-        categoria: 'Montaje',
-        categoriaColor: '#ff8a55',
-        titulo: 'Ensamblaje aerodinámico',
-        subtitulo: 'Fijación de aletas simétricas a 120 grados.',
-        texto: 'Pega 3 aletas simétricas en la base del cilindro para garantizar un centro de gravedad estable durante el ascenso.',
-        duracion: '00:40',
-        videoUrl: '',
-        subtitulos: 'Coloca las aletas a 120 grados para dar estabilidad al vuelo.'
-      },
-      {
-        id: 4,
-        numero: 4,
-        categoria: 'Montaje',
-        categoriaColor: '#ff8a55',
-        titulo: 'Carga de combustible reactivo',
-        subtitulo: 'Dosificación exacta de agua y reactivo efervescente.',
-        texto: 'Vierte 15 ml de agua tibia en el interior del tubo manteniendo la zona de sellado seca.',
-        duracion: '00:25',
-        videoUrl: '',
-        subtitulos: 'Añade el líquido sin mojar el reborde de sellado superior.'
-      },
-      {
-        id: 5,
-        numero: 5,
-        categoria: 'Observación',
-        categoriaColor: '#af78ff',
-        titulo: 'Activación y sellado rápido',
-        subtitulo: 'Inserción del reactivo y colocación en plataforma.',
-        texto: 'Introduce la pastilla, cierra firmemente con un clic, invierte el cohete en la plataforma y retrocede 3 metros.',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: 'Cierra con un clic firme, coloca sobre la base y da 3 pasos atrás.'
-      },
-      {
-        id: 6,
-        numero: 6,
-        categoria: 'Medición',
-        categoriaColor: '#54e4a4',
-        titulo: 'Telemetría de vuelo y altitud',
-        subtitulo: 'Cálculo del tiempo de vuelo y apogeo alcanzado.',
-        texto: 'Cronometra los segundos desde el despegue hasta el apogeo máximo para estimar la altura alcanzada mediante ecuaciones cinemáticas.',
-        duracion: '00:35',
-        videoUrl: '',
-        subtitulos: 'Mide con el cronómetro de la nave los segundos exactos de vuelo.'
-      },
-      {
-        id: 7,
-        numero: 7,
-        categoria: 'Resultados',
-        categoriaColor: '#7ce36a',
-        titulo: 'Análisis de empuje y presión',
-        subtitulo: 'Relación entre presión de gas y altura alcanzada.',
-        texto: 'La presión generada venció la resistencia del tapón a 1.8 atmósferas, logrando un despegue aerodinámico perfecto.',
-        duracion: '00:30',
-        videoUrl: '',
-        subtitulos: '¡Misión espacial completada con éxito rotundo!'
       }
     ]
   }

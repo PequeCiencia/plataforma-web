@@ -1,0 +1,106 @@
+{
+  "id": "exp-papelitos",
+  "institucion": "Pequeños Científicos - UPS Cuenca",
+  "institucionId": "pequenos_cientificos",
+  "titulo": "Papelitos de Colores: Danza Electrostática",
+  "subtitulo": "Cargas electrostáticas, transferencia de electrones y polarización",
+  "categoria": "Física & Electricidad",
+  "personajeId": "nikola",
+  "nivel": "10 a 18 años",
+  "duracionAprox": "25 minutos",
+  "descripcion": "Descubre las fuerzas invisibles de la electrostática haciendo que papelitos de colores dancen sin tocarlos mediante transferencia de electrones por fricción.",
+  "explicacionCientifica": "Al frotar un material aislante (como plástico o globo) contra lana o tela, este gana electrones adquiriendo carga negativa neta. Al acercarlo a los papelitos neutros, induce una polarización temporal en sus moléculas, atrayéndolos con fuerza electrostática superior a su peso gravitacional.",
+  "materiales": [
+    "Papel de seda o bond de diferentes colores cortado en trocitos pequeños (1x1 cm)",
+    "1 Regla plástica, tubo de PVC o globo de látex",
+    "1 Paño de lana, franela o paño de microfibra",
+    "1 Superficie de trabajo seca y aislante (madera o acrílico)",
+    "1 Par de gafas de explorador científico"
+  ],
+  "pasos": [
+    {
+      "id": 1,
+      "numero": 1,
+      "categoria": "Conceptos",
+      "categoriaColor": "#2ce4ff",
+      "titulo": "Fuerzas Invisibles de la Naturaleza",
+      "subtitulo": "Introducción al átomo, protones y electrones en movimiento.",
+      "texto": "La materia está compuesta por átomos con cargas positivas y negativas. Cuando los electrones se transfieren de un cuerpo a otro, se genera un desequilibrio eléctrico conocido como electricidad estática.",
+      "duracion": "00:15",
+      "videoUrl": "./instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_1.mp4",
+      "subtitulos": "Descubre cómo los electrones se transfieren creando fuerzas de atracción electrostática."
+    },
+    {
+      "id": 2,
+      "numero": 2,
+      "categoria": "Alistamiento",
+      "categoriaColor": "#38bdf8",
+      "titulo": "Verificación de Reactivos y Equipos",
+      "subtitulo": "Revisión de elementos en la estación de laboratorio.",
+      "texto": "Asegúrate de contar con papel de colores cortado finamente, la barra o tubo de fricción y el paño activador sobre la mesa de trabajo.",
+      "duracion": "00:15",
+      "videoUrl": "./instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_2.mp4",
+      "subtitulos": "Comprueba cada material en tu estación de trabajo antes de iniciar la práctica."
+    },
+    {
+      "id": 3,
+      "numero": 3,
+      "categoria": "Montaje",
+      "categoriaColor": "#ff8a55",
+      "titulo": "Preparación de la Zona de Carga",
+      "subtitulo": "Dispersión uniforme de confeti de papel en mesa plana.",
+      "texto": "Esparce los papelitos de colores en una capa fina sobre la mesa sin apilarlos para facilitar su interacción con el campo electrostático.",
+      "duracion": "00:15",
+      "videoUrl": "./instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_3.mp4",
+      "subtitulos": "Distribuye los trocitos de papel para que reaccionen libremente al campo de fuerza."
+    },
+    {
+      "id": 4,
+      "numero": 4,
+      "categoria": "Montaje",
+      "categoriaColor": "#ff8a55",
+      "titulo": "Fricción y Transferencia de Electrones",
+      "subtitulo": "Frotamiento enérgico y unidireccional del material aislante.",
+      "texto": "Frota la regla o tubo con el paño de lana de forma constante durante 15 a 20 segundos para arrancar electrones y cargar negativamente la superficie.",
+      "duracion": "00:15",
+      "videoUrl": "./instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_4.mp4",
+      "subtitulos": "Frota con energía para cargar de electrones la barra plástica."
+    },
+    {
+      "id": 5,
+      "numero": 5,
+      "categoria": "Observación",
+      "categoriaColor": "#af78ff",
+      "titulo": "Atracción Electrostática en Vivo",
+      "subtitulo": "Aproximación lenta a 2 centímetros de los papelitos.",
+      "texto": "Acerca suavemente el extremo cargado a los papelitos sin tocarlos. Observa cómo saltan y se adhieren desafiando la gravedad terrestre.",
+      "duracion": "00:15",
+      "videoUrl": "./instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_5.mp4",
+      "subtitulos": "¡Observa la danza de los papelitos saltando hacia la barra cargada!"
+    },
+    {
+      "id": 6,
+      "numero": 6,
+      "categoria": "Medición",
+      "categoriaColor": "#54e4a4",
+      "titulo": "Descarga y Polarización Inducida",
+      "subtitulo": "Intercambio de carga por contacto y repulsión posterior.",
+      "texto": "Nota cómo algunos papelitos se repelen tras hacer contacto. Al tocar la barra, reciben la misma carga y son expulsados.",
+      "duracion": "00:15",
+      "videoUrl": "./instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_6.mp4",
+      "subtitulos": "Al tocar la barra, los papelitos adquieren igual carga y se repelen."
+    },
+    {
+      "id": 7,
+      "numero": 7,
+      "categoria": "Resultados",
+      "categoriaColor": "#7ce36a",
+      "titulo": "Conclusiones y Principio de Ingeniería",
+      "subtitulo": "Aplicación en filtros de aire industriales y fotocopiadoras.",
+      "texto": "La fuerza electrostática descubierta es el principio con el que funcionan las impresoras láser, los filtros precipitadores de humo en fábricas y los paneles solares autolimpiables.",
+      "duracion": "00:15",
+      "videoUrl": "./instituciones/pequenos_cientificos/experimento_01_papelitos/videos/escena_7.mp4",
+      "subtitulos": "¡Misión cumplida! Has dominado el principio electrostático fundamental."
+    }
+  ]
+}

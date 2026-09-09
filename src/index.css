@@ -189,3 +189,49 @@ button {
   border: 1px solid var(--border-turquoise);
   border-radius: 4px;
 }
+
+/* Animaciones y Botonería Táctil Sci-Fi */
+@keyframes neonPulseCyan {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2);
+    border-color: #00e5ff;
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(0, 229, 255, 0.9), inset 0 0 18px rgba(0, 229, 255, 0.4);
+    border-color: #67e8f9;
+  }
+}
+
+@keyframes neonPulseGreen {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.45), inset 0 0 10px rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(16, 185, 129, 0.9), inset 0 0 18px rgba(16, 185, 129, 0.4);
+    border-color: #34d399;
+  }
+}
+
+.tactile-btn {
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+.tactile-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+.tactile-btn:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.floating-nav-btn {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.floating-nav-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+}
+.floating-nav-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+

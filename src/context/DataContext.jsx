@@ -32,10 +32,23 @@ export function DataProvider({ children }) {
     const saved = localStorage.getItem(STORAGE_KEYS.EXPERIMENTOS);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        const existingIds = new Set(parsed.map(e => e.id));
+        const rawParsed = JSON.parse(saved);
+        const parsed = rawParsed.map(exp => {
+          if (exp.id === 'exp-papelitos' && exp.pasos) {
+            return {
+              ...exp,
+              pasos: exp.pasos.map(p => ({
+                ...p,
+                videoUrl: p.videoUrl ? p.videoUrl.replace('./assets/videos/papelitos/', './instituciones/pequenos_cientificos/experimento_01_papelitos/videos/') : p.videoUrl
+              }))
+            };
+          }
+          return exp;
+        });
+        const validExperiments = parsed.filter(e => !['exp-densidades', 'exp-quimica', 'exp-cohete', 'exp-circuito'].includes(e.id));
+        const existingIds = new Set(validExperiments.map(e => e.id));
         const missing = EXPERIMENTOS_INICIALES.filter(e => !existingIds.has(e.id));
-        return [...missing, ...parsed];
+        return [...missing, ...validExperiments];
       } catch (e) { console.error(e); }
     }
     return EXPERIMENTOS_INICIALES;

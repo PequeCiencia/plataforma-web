@@ -273,11 +273,14 @@ export default function AdminDashboard({ onPreviewPortal, onLaunchNave }) {
         const colores = {
           'Conceptos': '#2ce4ff',
           'Materiales': '#ffc936',
+          'Alistamiento': '#38bdf8',
           'Montaje': '#ff8a55',
           'Observación': '#af78ff',
           'Medición': '#54e4a4',
           'Resultados': '#7ce36a',
-          'Conclusiones': '#10b981'
+          'Conclusiones': '#10b981',
+          'Seguridad': '#f43f5e',
+          'Hipótesis': '#a855f7'
         };
         next[idx].categoriaColor = colores[value] || '#00e5ff';
       }
@@ -1073,28 +1076,80 @@ export default function AdminDashboard({ onPreviewPortal, onLaunchNave }) {
                             {idx + 1}
                           </span>
 
-                          {/* Selector de Categoría */}
-                          <select
-                            value={paso.categoria}
-                            onChange={(e) => handleUpdatePaso(idx, 'categoria', e.target.value)}
-                            style={{
-                              padding: '4px 10px',
-                              borderRadius: '8px',
-                              background: '#0a1a30',
-                              border: '1px solid #00e5ff',
-                              color: paso.categoriaColor || '#00e5ff',
-                              fontWeight: 900,
-                              fontSize: '0.78rem'
-                            }}
-                          >
-                            <option value="Conceptos">Conceptos</option>
-                            <option value="Materiales">Materiales</option>
-                            <option value="Montaje">Montaje</option>
-                            <option value="Observación">Observación</option>
-                            <option value="Medición">Medición</option>
-                            <option value="Resultados">Resultados</option>
-                            <option value="Conclusiones">Conclusiones</option>
-                          </select>
+                          {/* Selector de Categoría / Personalizado */}
+                          {!paso._isCustom && ['Conceptos', 'Materiales', 'Alistamiento', 'Montaje', 'Observación', 'Medición', 'Resultados', 'Conclusiones', 'Seguridad', 'Hipótesis'].includes(paso.categoria) ? (
+                            <select
+                              value={paso.categoria}
+                              onChange={(e) => {
+                                if (e.target.value === '__custom__') {
+                                  handleUpdatePaso(idx, '_isCustom', true);
+                                  handleUpdatePaso(idx, 'categoria', '');
+                                } else {
+                                  handleUpdatePaso(idx, 'categoria', e.target.value);
+                                }
+                              }}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '8px',
+                                background: '#0a1a30',
+                                border: '1px solid #00e5ff',
+                                color: paso.categoriaColor || '#00e5ff',
+                                fontWeight: 900,
+                                fontSize: '0.78rem'
+                              }}
+                            >
+                              <option value="Conceptos">Conceptos</option>
+                              <option value="Materiales">Materiales</option>
+                              <option value="Alistamiento">Alistamiento</option>
+                              <option value="Montaje">Montaje</option>
+                              <option value="Observación">Observación</option>
+                              <option value="Medición">Medición</option>
+                              <option value="Resultados">Resultados</option>
+                              <option value="Conclusiones">Conclusiones</option>
+                              <option value="Seguridad">Seguridad</option>
+                              <option value="Hipótesis">Hipótesis</option>
+                              <option value="__custom__">✏️ + Personalizado...</option>
+                            </select>
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <input
+                                type="text"
+                                value={paso.categoria}
+                                placeholder="Escribe categoría..."
+                                onChange={(e) => handleUpdatePaso(idx, 'categoria', e.target.value)}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '8px',
+                                  background: 'rgba(0, 229, 255, 0.12)',
+                                  border: '1.5px solid #00e5ff',
+                                  color: '#ffffff',
+                                  fontWeight: 800,
+                                  fontSize: '0.78rem',
+                                  width: '135px'
+                                }}
+                                autoFocus
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleUpdatePaso(idx, '_isCustom', false);
+                                  handleUpdatePaso(idx, 'categoria', 'Conceptos');
+                                }}
+                                title="Volver a lista predefinida"
+                                style={{
+                                  background: 'rgba(255,255,255,0.08)',
+                                  border: '1px solid rgba(255,255,255,0.2)',
+                                  color: '#94a3b8',
+                                  borderRadius: '6px',
+                                  padding: '3px 6px',
+                                  fontSize: '0.7rem',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                ✕ Lista
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {/* Botones de orden y eliminación */}
