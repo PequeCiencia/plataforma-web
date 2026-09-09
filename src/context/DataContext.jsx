@@ -31,7 +31,12 @@ export function DataProvider({ children }) {
   const [experimentos, setExperimentos] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.EXPERIMENTOS);
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+      try {
+        const parsed = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(e => e.id));
+        const missing = EXPERIMENTOS_INICIALES.filter(e => !existingIds.has(e.id));
+        return [...missing, ...parsed];
+      } catch (e) { console.error(e); }
     }
     return EXPERIMENTOS_INICIALES;
   });
@@ -129,7 +134,7 @@ export function DataProvider({ children }) {
 
   // Experimento Activo para la Cabina de la Nave
   const [activeExpId, setActiveExpId] = useState(() => {
-    return localStorage.getItem('pc_active_exp_id') || 'exp-densidades';
+    return localStorage.getItem('pc_active_exp_id') || 'exp-papelitos';
   });
 
   useEffect(() => {
