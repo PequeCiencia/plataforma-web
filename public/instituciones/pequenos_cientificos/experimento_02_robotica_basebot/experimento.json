@@ -1,0 +1,122 @@
+{
+  "id": "exp-robotica-basebot",
+  "titulo": "Basebot VEX IQ 2.0: Ensamblaje de Chasis",
+  "subtitulo": "Guía 3D interactiva de montaje mecánico, transmisión diferencial y cerebro VEX IQ",
+  "categoria": "Robótica",
+  "tipo": "robotica_3d",
+  "personajeId": "vector",
+  "tallerId": "tal-5",
+  "nivel": "8 a 16 años",
+  "tiempoMinutos": 45,
+  "institucion": "Pequeños Científicos - Universidad Politécnica Salesiana",
+  "recursos": {
+    "visor3dUrl": "https://instructions.online/?id=4093-VEX_IQ_Basebot_2.0",
+    "pdfManualUrl": "https://content.vexrobotics.com/stem-labs/iq/builds/basebot/iq-2nd-gen-basebot-rev12.pdf",
+    "tipoInteractividad": "3D_CAD_AND_PDF"
+  },
+  "descripcion": "Aprende ingeniería y robótica construyendo la base móvil VEX IQ de 2da generación. Utiliza el visor 3D interactivo para manipular las piezas en 360° o consulta el manual técnico oficial.",
+  "hipotesis": "¿Cómo influye la rigidez del chasis y la tracción diferencial en la estabilidad y maniobrabilidad de un robot explorador autónomo?",
+  "explicacionCientifica": "El Basebot VEX IQ 2.0 utiliza un sistema de tracción diferencial con dos motores inteligentes independientes. La simetría del chasis y la rueda loca (caster) reducen la fricción al girar sobre su propio eje (spin turn), permitiendo que los algoritmos de navegación odométrica y control giroscópico operen con máxima precisión.",
+  "materiales": [
+    "1x Cerebro VEX IQ Brain (2da Generación)",
+    "1x Batería recargable Li-Ion VEX IQ 2.0",
+    "2x Motores Inteligentes VEX IQ (Smart Motors)",
+    "2x Ruedas motrices de tracción (200mm)",
+    "1x Rueda loca omnidireccional (Caster Wheel)",
+    "Vigas estructurales 2x12 y 1x8 VEX IQ",
+    "Pines conectores de fricción (azules y negros)",
+    "2x Ejes motrices de acero templado y espaciadores",
+    "2x Smart Cables de comunicación y control"
+  ],
+  "pasos": [
+    {
+      "id": 1,
+      "numero": 1,
+      "categoria": "Alistamiento",
+      "titulo": "Alistamiento y Clasificación de Piezas",
+      "subtitulo": "Revisión de componentes mecánicos, bandeja y regla de escala 1:1.",
+      "texto": "Antes de ensamblar, clasifica las vigas, ejes y pines en tu estación de trabajo. Usa la regla 1:1 para confirmar las longitudes de los ejes y vigas estructurales.",
+      "piezasRequeridas": [
+        { "nombre": "Viga estructural 2x12", "cantidad": 2, "color": "Gris" },
+        { "nombre": "Pines de fricción conectores", "cantidad": 8, "color": "Azul" },
+        { "nombre": "Bandeja organizadora VEX IQ", "cantidad": 1, "color": "Transparente" }
+      ]
+    },
+    {
+      "id": 2,
+      "numero": 2,
+      "categoria": "Montaje",
+      "titulo": "Subchasis Izquierdo",
+      "subtitulo": "Ensamble de vigas longitudinales y bujes de soporte para eje.",
+      "texto": "Une las vigas 2x12 formando el larguero izquierdo del chasis. Inserta los pines de fricción en los agujeros indicados para garantizar rigidez torsional.",
+      "piezasRequeridas": [
+        { "nombre": "Viga 2x12", "cantidad": 1, "color": "Gris" },
+        { "nombre": "Conectores en ángulo", "cantidad": 2, "color": "Negro" },
+        { "nombre": "Pines de fricción 1x1", "cantidad": 4, "color": "Azul" }
+      ]
+    },
+    {
+      "id": 3,
+      "numero": 3,
+      "categoria": "Montaje",
+      "titulo": "Subchasis Derecho y Travesaño Central",
+      "subtitulo": "Unión simétrica de ambos largueros con vigas transversales.",
+      "texto": "Construye el lado derecho como espejo del izquierdo y acóplalos con la viga transversal. El marco debe quedar perfectamente escuadrado para evitar desvíos al rodar.",
+      "piezasRequeridas": [
+        { "nombre": "Viga 2x12", "cantidad": 1, "color": "Gris" },
+        { "nombre": "Viga transversal 2x8", "cantidad": 1, "color": "Gris" },
+        { "nombre": "Pines conectores 2x2", "cantidad": 6, "color": "Negro" }
+      ]
+    },
+    {
+      "id": 4,
+      "numero": 4,
+      "categoria": "Mecánica",
+      "titulo": "Instalación de Motores Inteligentes",
+      "subtitulo": "Acoplamiento de Smart Motors y ejes motrices directos.",
+      "texto": "Fija los dos motores inteligentes VEX IQ en la parte posterior del chasis con pines de retención. Inserta los ejes de acero en los orificios cuadrados de salida del motor.",
+      "piezasRequeridas": [
+        { "nombre": "Smart Motor VEX IQ", "cantidad": 2, "color": "Gris/Azul" },
+        { "nombre": "Eje de acero templado 2x", "cantidad": 2, "color": "Metálico" },
+        { "nombre": "Bujes espaciadores", "cantidad": 4, "color": "Blanco" }
+      ]
+    },
+    {
+      "id": 5,
+      "numero": 5,
+      "categoria": "Tracción",
+      "titulo": "Montaje de Ruedas y Rueda Caster",
+      "subtitulo": "Instalación de neumáticos de tracción y rueda de apoyo omnidireccional.",
+      "texto": "Coloca las dos ruedas principales en los ejes motrices y asegura con collares de fijación. En el frente, monta la rueda loca (caster) para permitir rotación de radio cero.",
+      "piezasRequeridas": [
+        { "nombre": "Rueda motriz 200mm con neumático", "cantidad": 2, "color": "Gris/Caucho" },
+        { "nombre": "Rueda Caster de soporte", "cantidad": 1, "color": "Negro" },
+        { "nombre": "Collares de eje con seguro", "cantidad": 2, "color": "Verde/Gris" }
+      ]
+    },
+    {
+      "id": 6,
+      "numero": 6,
+      "categoria": "Electrónica",
+      "titulo": "Fijación del Cerebro VEX IQ y Batería",
+      "subtitulo": "Montaje de la unidad de control central y batería de litio.",
+      "texto": "Posiciona el Brain VEX IQ en el centro de gravedad del chasis con la pantalla LCD orientada hacia arriba. Desliza la batería Li-Ion en la bahía inferior hasta oír el clic.",
+      "piezasRequeridas": [
+        { "nombre": "Cerebro VEX IQ Brain 2da Gen", "cantidad": 1, "color": "Negro con LCD" },
+        { "nombre": "Batería recargable Li-Ion", "cantidad": 1, "color": "Negro" },
+        { "nombre": "Pines de soporte largo", "cantidad": 4, "color": "Azul" }
+      ]
+    },
+    {
+      "id": 7,
+      "numero": 7,
+      "categoria": "Pruebas",
+      "titulo": "Cableado Smart Cables y Test de Encendido",
+      "subtitulo": "Conexión a puertos inteligentes y validación de firmware.",
+      "texto": "Conecta los Smart Cables desde los motores izquierdo y derecho hacia los puertos 1 y 6 del Brain. Enciende la unidad con el botón central y valida la telemetría en pantalla.",
+      "piezasRequeridas": [
+        { "nombre": "Smart Cable 200mm", "cantidad": 2, "color": "Negro con RJ11" }
+      ]
+    }
+  ]
+}

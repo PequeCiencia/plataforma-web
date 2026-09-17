@@ -9,13 +9,14 @@ import ExperimentosView from './components/ExperimentosView';
 import TiendaView from './components/TiendaView';
 import PersonajesView from './components/PersonajesView';
 import AdminDashboard from './components/AdminDashboard';
+import SimulacionesView from './components/SimulacionesView';
 import NaveEspacialMision from './components/NaveEspacialMision';
 import WarpTransition from './components/WarpTransition';
-import EscanerTripulacion from './components/EscanerTripulacion';
+import AuthModal from './components/AuthModal';
 
 function MainApp() {
-  const { userRole } = useData();
-  const [activeTab, setActiveTab] = useState('nave'); // 'nave' | 'escaner' | 'home' | 'talleres' | 'experimentos' | 'tienda' | 'personajes' | 'admin'
+  const { userRole, isAuthModalOpen, setIsAuthModalOpen, authTargetRole } = useData();
+  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'talleres' | 'experimentos' | 'simulaciones' | 'tienda' | 'personajes' | 'admin' | 'nave'
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
 
@@ -68,20 +69,20 @@ function MainApp() {
 
           {/* Contenido Principal según la pestaña activa */}
           <main style={{ flexGrow: 1 }}>
-            {activeTab === 'escaner' && (
-              <EscanerTripulacion onComplete={() => handleNavigate('home')} />
-            )}
-
             {activeTab === 'home' && (
               <HomePortals onNavigate={handleNavigate} />
             )}
 
             {activeTab === 'talleres' && (
-              <TalleresView />
+              <TalleresView onNavigate={handleNavigate} />
             )}
 
             {activeTab === 'experimentos' && (
               <ExperimentosView onNavigate={handleNavigate} />
+            )}
+
+            {activeTab === 'simulaciones' && (
+              <SimulacionesView onNavigate={handleNavigate} />
             )}
 
             {activeTab === 'tienda' && (
@@ -110,6 +111,18 @@ function MainApp() {
           <Footer onNavigate={handleNavigate} />
         </>
       )}
+
+      {/* Modal Global de Autenticación Sci-Fi */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        targetRole={authTargetRole} 
+        onSuccess={(user) => {
+          if (user.role === 'admin' || user.role === 'docente') {
+            setActiveTab('admin');
+          }
+        }}
+      />
     </div>
   );
 }

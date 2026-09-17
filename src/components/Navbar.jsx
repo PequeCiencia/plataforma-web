@@ -3,6 +3,7 @@ import React from 'react';
 import { useData } from '../context/DataContext';
 import { 
   Atom, 
+  Home,
   Wrench, 
   FlaskConical, 
   ShoppingBag, 
@@ -10,11 +11,15 @@ import {
   UserCheck, 
   Sparkles,
   Layers,
-  GraduationCap
+  GraduationCap,
+  Bot,
+  Lock,
+  LogOut,
+  User
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, onOpenCart }) {
-  const { userRole, setUserRole, solicitudKits } = useData();
+  const { userRole, currentUser, logout, openAuthModal, solicitudKits } = useData();
 
   const totalItemsSolicitud = solicitudKits.reduce((acc, item) => acc + item.cantidad, 0);
 
@@ -23,21 +28,25 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCart }) {
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      backgroundColor: 'rgba(9, 13, 22, 0.92)',
+      backgroundColor: 'rgba(9, 13, 22, 0.94)',
       backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+      width: '100%'
     }}>
-      <div className="container" style={{
+      <div style={{
+        width: '100%',
+        maxWidth: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '14px 24px',
+        padding: '10px 32px',
         gap: '16px',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
+        boxSizing: 'border-box'
       }}>
         {/* Logo Institucional y Nombre */}
         <div 
-          onClick={() => setActiveTab('nave')}
+          onClick={() => setActiveTab('home')}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -98,55 +107,35 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCart }) {
           </div>
         </div>
 
-        {/* Links de Navegación */}
+        {/* Links de Navegación de Contenido */}
         <nav style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
+          gap: '5px',
           background: 'rgba(255, 255, 255, 0.04)',
           padding: '4px 6px',
           borderRadius: '9999px',
           border: '1px solid rgba(255, 255, 255, 0.06)'
         }}>
           <button
-            onClick={() => setActiveTab('nave')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '9999px',
-              fontSize: '0.88rem',
-              fontWeight: 800,
-              background: activeTab === 'nave' ? 'linear-gradient(135deg, #00e5ff 0%, #0284c7 100%)' : 'rgba(0, 229, 255, 0.1)',
-              color: activeTab === 'nave' ? '#030812' : '#00e5ff',
-              border: '1px solid #00e5ff',
-              boxShadow: activeTab === 'nave' ? '0 0 15px rgba(0, 229, 255, 0.4)' : 'none',
-              transition: 'all 0.2s ease',
-              cursor: 'pointer'
-            }}
-          >
-            <span>🚀 Cabina Espacial</span>
-          </button>
-
-          <button
             onClick={() => setActiveTab('home')}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '8px 16px',
+              padding: '7px 14px',
               borderRadius: '9999px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
               background: activeTab === 'home' ? 'rgba(0, 229, 255, 0.15)' : 'transparent',
               color: activeTab === 'home' ? '#00e5ff' : '#94a3b8',
               border: activeTab === 'home' ? '1px solid rgba(0, 229, 255, 0.3)' : '1px solid transparent',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              cursor: 'pointer'
             }}
           >
-            <Sparkles size={16} />
-            <span>Portales</span>
+            <Home size={15} />
+            <span>Página Principal</span>
           </button>
 
           <button
@@ -155,17 +144,18 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCart }) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '8px 16px',
+              padding: '7px 14px',
               borderRadius: '9999px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
               background: activeTab === 'talleres' ? 'rgba(255, 153, 0, 0.15)' : 'transparent',
               color: activeTab === 'talleres' ? '#ff9900' : '#94a3b8',
               border: activeTab === 'talleres' ? '1px solid rgba(255, 153, 0, 0.3)' : '1px solid transparent',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              cursor: 'pointer'
             }}
           >
-            <Wrench size={16} />
+            <Wrench size={15} />
             <span>Talleres</span>
           </button>
 
@@ -175,143 +165,138 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCart }) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '8px 16px',
+              padding: '7px 14px',
               borderRadius: '9999px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
               background: activeTab === 'experimentos' ? 'rgba(0, 229, 255, 0.15)' : 'transparent',
               color: activeTab === 'experimentos' ? '#00e5ff' : '#94a3b8',
               border: activeTab === 'experimentos' ? '1px solid rgba(0, 229, 255, 0.3)' : '1px solid transparent',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              cursor: 'pointer'
             }}
           >
-            <FlaskConical size={16} />
+            <FlaskConical size={15} />
             <span>Experimentos</span>
           </button>
 
+          <button
+            onClick={() => setActiveTab('simulaciones')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 14px',
+              borderRadius: '9999px',
+              fontSize: '0.84rem',
+              fontWeight: 600,
+              background: activeTab === 'simulaciones' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+              color: activeTab === 'simulaciones' ? '#38bdf8' : '#94a3b8',
+              border: activeTab === 'simulaciones' ? '1px solid #38bdf8' : '1px solid transparent',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer'
+            }}
+          >
+            <Bot size={15} />
+            <span>Simulaciones</span>
+          </button>
+
+          {/* Gestión Docente */}
           <button
             onClick={() => setActiveTab('admin')}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '8px 16px',
+              padding: '7px 14px',
               borderRadius: '9999px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 700,
               background: activeTab === 'admin' ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
               color: activeTab === 'admin' ? '#f59e0b' : '#94a3b8',
               border: activeTab === 'admin' ? '1px solid #f59e0b' : '1px solid transparent',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              cursor: 'pointer'
             }}
+            title={userRole === 'general' ? 'Requiere inicio de sesión docente' : 'Panel de Gestión Docente'}
           >
-            <ShieldCheck size={16} />
+            <ShieldCheck size={15} />
             <span>Gestión Docente</span>
+            {userRole === 'general' && <Lock size={12} color="#f59e0b" style={{ opacity: 0.7 }} />}
           </button>
 
+          {/* Tienda de Kits con Badge Próximamente */}
           <button
             onClick={() => setActiveTab('tienda')}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
+              gap: '7px',
+              padding: '7px 14px',
               borderRadius: '9999px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
               background: activeTab === 'tienda' ? 'rgba(255, 0, 127, 0.15)' : 'transparent',
               color: activeTab === 'tienda' ? '#ff007f' : '#94a3b8',
               border: activeTab === 'tienda' ? '1px solid rgba(255, 0, 127, 0.3)' : '1px solid transparent',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              cursor: 'pointer'
             }}
           >
-            <ShoppingBag size={16} />
+            <ShoppingBag size={15} />
             <span>Tienda de Kits</span>
+            <span style={{
+              fontSize: '0.62rem',
+              fontWeight: 900,
+              padding: '2px 7px',
+              borderRadius: '8px',
+              background: 'rgba(255, 0, 127, 0.2)',
+              border: '1px solid rgba(255, 0, 127, 0.6)',
+              color: '#ff007f',
+              letterSpacing: '0.04em'
+            }}>
+              PRÓXIMAMENTE
+            </span>
           </button>
+        </nav>
 
-          {/* Botón Escáner de Tripulación (ADN Visual) */}
-          <button
-            onClick={() => setActiveTab('escaner')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 18px',
-              borderRadius: '9999px',
-              fontSize: '0.88rem',
-              fontWeight: 800,
-              background: activeTab === 'escaner' 
-                ? 'var(--color-red)' 
-                : 'rgba(230, 57, 70, 0.15)',
-              color: activeTab === 'escaner' ? '#ffffff' : 'var(--color-red)',
-              border: '1px solid var(--color-red)',
-              boxShadow: activeTab === 'escaner' ? '0 0 15px rgba(230, 57, 70, 0.5)' : 'none',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <span>🧬 Escáner ADN</span>
-          </button>
-
-          {/* Botón Cabina Espacial Interactiva */}
+        {/* Controles de Acción Principal y Estado */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          flexWrap: 'wrap'
+        }}>
+          {/* BOTÓN OFICIAL Y ÚNICO: CABINA DE MISIÓN */}
           <button
             onClick={() => setActiveTab('nave')}
+            className="tactile-btn"
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '8px 18px',
+              gap: '8px',
+              padding: '9px 18px',
               borderRadius: '9999px',
               fontSize: '0.88rem',
-              fontWeight: 800,
-              background: activeTab === 'nave' 
-                ? 'linear-gradient(135deg, #00e5ff, #0070f3)' 
-                : 'linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(255, 0, 127, 0.15))',
-              color: activeTab === 'nave' ? '#040b16' : '#00e5ff',
-              border: '1px solid rgba(0, 229, 255, 0.4)',
-              boxShadow: '0 0 15px rgba(0, 229, 255, 0.25)',
-              transition: 'all 0.2s ease'
+              fontWeight: 900,
+              background: 'linear-gradient(135deg, #00e5ff 0%, #0070f3 100%)',
+              color: '#030812',
+              border: '1px solid #00e5ff',
+              boxShadow: '0 0 20px rgba(0, 229, 255, 0.45)',
+              cursor: 'pointer'
             }}
           >
             <Sparkles size={16} />
             <span>🚀 Cabina de Misión</span>
           </button>
 
-          {userRole === 'admin' && (
-            <button
-              onClick={() => setActiveTab('admin')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                borderRadius: '9999px',
-                fontSize: '0.88rem',
-                fontWeight: 700,
-                background: activeTab === 'admin' ? 'linear-gradient(135deg, #00e5ff, #0070f3)' : 'rgba(0, 229, 255, 0.1)',
-                color: activeTab === 'admin' ? '#090d16' : '#00e5ff',
-                border: '1px solid rgba(0, 229, 255, 0.35)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <ShieldCheck size={16} />
-              <span>Backoffice</span>
-            </button>
-          )}
-        </nav>
-
-        {/* Controles de Estado / Modo / Solicitud */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
           {/* Badge En Órbita */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            fontSize: '0.75rem',
-            fontWeight: 700,
+            fontSize: '0.74rem',
+            fontWeight: 800,
             color: '#00e676',
             background: 'rgba(0, 230, 118, 0.08)',
             padding: '6px 12px',
@@ -328,100 +313,105 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCart }) {
             <span>EN ÓRBITA</span>
           </div>
 
-          {/* Selector de Rol Docente / Administrador */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: '#111827',
-            padding: '3px',
-            borderRadius: '9999px',
-            border: '1px solid rgba(255, 255, 255, 0.12)'
-          }}>
+          {/* Estado de Sesión y Acceso Institucional */}
+          {userRole === 'general' ? (
             <button
-              onClick={() => {
-                setUserRole('docente');
-                if (activeTab === 'admin') setActiveTab('home');
-              }}
-              title="Modo Docente: Consulta y Laboratorio Escolar"
+              onClick={() => openAuthModal('docente')}
+              className="tactile-btn"
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
-                padding: '6px 12px',
+                gap: '6px',
+                padding: '7px 14px',
                 borderRadius: '9999px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                background: userRole === 'docente' ? '#00e5ff' : 'transparent',
-                color: userRole === 'docente' ? '#090d16' : '#94a3b8',
-                transition: 'all 0.2s'
-              }}
-            >
-              <UserCheck size={14} />
-              <span>Docente</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setUserRole('admin');
-                setActiveTab('admin');
-              }}
-              title="Modo Admin: Editar y Publicar Contenidos"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '6px 12px',
-                borderRadius: '9999px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                background: userRole === 'admin' ? '#ff9900' : 'transparent',
-                color: userRole === 'admin' ? '#090d16' : '#94a3b8',
-                transition: 'all 0.2s'
-              }}
-            >
-              <ShieldCheck size={14} />
-              <span>Admin</span>
-            </button>
-          </div>
-
-          {/* Botón Carrito / Solicitud */}
-          {totalItemsSolicitud > 0 && (
-            <button
-              onClick={onOpenCart}
-              style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
-                background: 'rgba(255, 0, 127, 0.15)',
-                border: '1px solid rgba(255, 0, 127, 0.35)',
-                color: '#ff007f',
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#f8fafc',
+                fontSize: '0.8rem',
+                fontWeight: 800,
                 cursor: 'pointer'
               }}
+              title="Iniciar Sesión como Docente o Administrador"
             >
-              <ShoppingBag size={18} />
-              <span style={{
-                position: 'absolute',
-                top: '-4px',
-                right: '-4px',
-                background: '#ff007f',
-                color: '#ffffff',
-                fontSize: '0.7rem',
-                fontWeight: 800,
-                width: '18px',
-                height: '18px',
-                borderRadius: '50%',
+              <Lock size={14} color="#00e5ff" />
+              <span>Acceso Institucional</span>
+            </button>
+          ) : userRole === 'docente' ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 8px rgba(255, 0, 127, 0.6)'
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '9999px',
+                background: 'rgba(0, 229, 255, 0.18)',
+                border: '1px solid #00e5ff',
+                color: '#00e5ff',
+                fontSize: '0.78rem',
+                fontWeight: 800
               }}>
-                {totalItemsSolicitud}
-              </span>
-            </button>
+                <GraduationCap size={15} />
+                <span>Docente UPS</span>
+              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  if (activeTab === 'admin') setActiveTab('home');
+                }}
+                className="tactile-btn"
+                title="Cerrar sesión institucional"
+                style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  color: '#f87171',
+                  borderRadius: '9999px',
+                  padding: '6px 10px',
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                Salir
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '9999px',
+                background: 'rgba(245, 158, 11, 0.2)',
+                border: '1px solid #f59e0b',
+                color: '#f59e0b',
+                fontSize: '0.78rem',
+                fontWeight: 800
+              }}>
+                <ShieldCheck size={15} />
+                <span>Admin</span>
+              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  if (activeTab === 'admin') setActiveTab('home');
+                }}
+                className="tactile-btn"
+                title="Cerrar sesión de administrador"
+                style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  color: '#f87171',
+                  borderRadius: '9999px',
+                  padding: '6px 10px',
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                Salir
+              </button>
+            </div>
           )}
         </div>
       </div>

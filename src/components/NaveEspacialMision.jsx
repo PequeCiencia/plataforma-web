@@ -1,6 +1,6 @@
 // NaveEspacialMision.jsx - Cabina Espacial Versión 2.0 (Botones Táctiles, Gating Secuencial y Avance Continuo)
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useData } from '../context/DataContext';
+import { useData, CREDENCIALES_DEFAULT } from '../context/DataContext';
 import { saveMediaFile, getMediaUrl } from '../utils/mediaStorage';
 import confetti from 'canvas-confetti';
 import { 
@@ -13,6 +13,8 @@ import {
   Check, 
   Edit3, 
   Maximize2, 
+  Minimize2,
+  Maximize,
   Volume2, 
   VolumeX, 
   X, 
@@ -22,6 +24,7 @@ import {
   Printer, 
   Grid, 
   Eye, 
+  EyeOff,
   FlaskConical, 
   Square, 
   BookOpen, 
@@ -30,7 +33,9 @@ import {
   ShieldCheck, 
   Zap, 
   FileVideo, 
-  FolderOpen 
+  FolderOpen,
+  Box,
+  FileText
 } from 'lucide-react';
 
 export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
@@ -38,7 +43,10 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
     experimentos, 
     activeExpId, 
     setActiveExpId, 
-    updatePasoMedia 
+    updatePasoMedia,
+    userRole,
+    currentUser,
+    login
   } = useData();
 
   // Experimento actual seleccionado
@@ -74,6 +82,11 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
   // Modo Docente: permite desbloquear todos los pasos para revisión rápida del profesor
   const [modoDocenteLibre, setModoDocenteLibre] = useState(false);
 
+  // 🤖 Pestaña activa para visor de Robótica: '3d' | 'pdf' | 'piezas'
+  const [roboticaTab, setRoboticaTab] = useState('3d');
+  const isRobotica = experimentoActual.tipo === 'robotica_3d' || !!experimentoActual.visor3dUrl;
+  const [isVisorExpandido, setIsVisorExpandido] = useState(false);
+
   // ⚠️ Advertencia antes de recargar la página o salir (para no perder el progreso accidentalmente)
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -97,6 +110,13 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isExpListOpen, setIsExpListOpen] = useState(false);
   const [isMaterialsView, setIsMaterialsView] = useState(false);
+
+  // 🔐 Modal y estado de autenticación docente para control libre de pasos
+  const [isDocenteUnlockModalOpen, setIsDocenteUnlockModalOpen] = useState(false);
+  const [docenteUnlockUser, setDocenteUnlockUser] = useState('');
+  const [docenteUnlockPass, setDocenteUnlockPass] = useState('');
+  const [docenteUnlockError, setDocenteUnlockError] = useState('');
+  const [showDocenteUnlockPass, setShowDocenteUnlockPass] = useState(false);
 
   // Notificaciones toast temporales
   const [toastMessage, setToastMessage] = useState(null);
@@ -224,6 +244,38 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
     }
   };
 
+  // 🎓 Control Seguro de Modo Docente (Bloqueo / Desbloqueo de pasos)
+  const handleToggleDocenteMode = () => {
+    if (modoDocenteLibre) {
+      // Si está activo, bloquear inmediatamente y regresar a modo estudiante
+      setModoDocenteLibre(false);
+      playBeep(400, 'sine', 0.08);
+      showToast('🔒 Modo Estudiante: Secuencia Bloqueada');
+    } else {
+      // Para desbloquear, SIEMPRE se solicitan credenciales oficiales de Docente / Administrador
+      setDocenteUnlockUser(currentUser?.email || CREDENCIALES_DEFAULT.DOCENTE.usuario);
+      setDocenteUnlockPass('');
+      setDocenteUnlockError('');
+      setShowDocenteUnlockPass(false);
+      setIsDocenteUnlockModalOpen(true);
+    }
+  };
+
+  const handleDocenteUnlockSubmit = (e) => {
+    if (e) e.preventDefault();
+    setDocenteUnlockError('');
+    const res = login(docenteUnlockUser, docenteUnlockPass);
+    if (res.success && (res.user.role === 'docente' || res.user.role === 'admin')) {
+      setModoDocenteLibre(true);
+      setIsDocenteUnlockModalOpen(false);
+      playBeep(750, 'sine', 0.08);
+      showToast(`🔓 Modo Docente Activado (${res.user.nombre})`);
+    } else {
+      playBeep(250, 'sawtooth', 0.15);
+      setDocenteUnlockError(res.error || 'Credenciales incorrectas. Solo docentes o administradores autorizados pueden desbloquear el control de pasos.');
+    }
+  };
+
   // Simulación de reproducción si no hay video real cargado
   useEffect(() => {
     let interval = null;
@@ -339,8 +391,12 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
       if (videoRef.current) {
         videoRef.current.muted = !next;
       }
-      if (next) playBeep(700, 'sine', 0.08);
-      showToast(next ? '🔊 Audio Activado' : '🔇 Audio Silenciado (MUTE)');
+      if (next) {
+        playBeep(700, 'sine', 0.08);
+        showToast('🔊 Audio Activado');
+      } else {
+        showToast('🔇 Audio Silenciado (MUTE)');
+      }
       return next;
     });
   };
@@ -484,120 +540,121 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
       {/* ========================================================
           1. BARRA SUPERIOR INSTITUCIONAL (HUD TOP)
           ======================================================== */}
-      <header style={{
-        flexShrink: 0,
-        zIndex: 10,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '6px 18px',
-        background: 'rgba(7, 18, 36, 0.92)',
-        border: '1.5px solid rgba(0, 229, 255, 0.35)',
-        borderRadius: '14px',
-        backdropFilter: 'blur(16px)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.7), inset 0 0 12px rgba(0, 229, 255, 0.08)',
-        margin: '8px 14px 0 14px',
-        gap: '12px',
-        height: '50px'
-      }}>
-        {/* LOGO UPS */}
-        <div style={{
+      {(!isRobotica || !isVisorExpandido) && (
+        <header style={{
+          flexShrink: 0,
+          zIndex: 10,
           display: 'flex',
           alignItems: 'center',
-          background: 'rgba(255, 255, 255, 0.96)',
-          padding: '2px 10px',
-          borderRadius: '10px',
-          border: '2px solid #00509d',
-          boxShadow: '0 0 12px rgba(0, 80, 157, 0.4)',
-          height: '36px'
+          justifyContent: 'space-between',
+          padding: isRobotica ? '4px 14px' : '6px 18px',
+          background: 'rgba(7, 18, 36, 0.92)',
+          border: '1.5px solid rgba(0, 229, 255, 0.35)',
+          borderRadius: '14px',
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.7), inset 0 0 12px rgba(0, 229, 255, 0.08)',
+          margin: isRobotica ? '4px 10px 0 10px' : '8px 14px 0 14px',
+          gap: '12px',
+          height: isRobotica ? '44px' : '50px'
         }}>
-          <img 
-            src="./assets/images/logo_ups.png" 
-            alt="Universidad Politécnica Salesiana Ecuador" 
-            style={{ maxHeight: '28px', width: 'auto', objectFit: 'contain' }}
-          />
-        </div>
-
-        {/* SELECTOR DE MISIÓN ACTIVA */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            onClick={() => setIsExpListOpen(!isExpListOpen)}
-            className="tactile-btn"
-            style={{
-              background: 'linear-gradient(180deg, #0d264a 0%, #051326 100%)',
-              border: '1.5px solid #00e5ff',
-              boxShadow: '0 0 15px rgba(0, 229, 255, 0.3)',
-              padding: '5px 16px',
-              borderRadius: '24px',
-              color: '#ffffff',
-              fontWeight: 800,
-              fontSize: '0.85rem',
-              letterSpacing: '0.04em',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer'
-            }}
-            title="Haz clic para explorar otros experimentos"
-          >
-            <FlaskConical size={15} color="#00e5ff" />
-            <span style={{ textTransform: 'uppercase' }}>Misión:</span>
-            <span style={{ 
-              background: '#00e5ff', 
-              color: '#030812', 
-              padding: '2px 8px', 
-              borderRadius: '12px', 
-              fontWeight: 900,
-              fontSize: '0.78rem'
-            }}>
-              {experimentoActual.titulo}
-            </span>
-            <Grid size={13} color="#94a3b8" />
-          </button>
-        </div>
-
-        {/* LOGO PEQUEÑOS CIENTÍFICOS & SALIR */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* LOGO UPS */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             background: 'rgba(255, 255, 255, 0.96)',
             padding: '2px 10px',
             borderRadius: '10px',
-            border: '2px solid #ff7b00',
-            boxShadow: '0 0 12px rgba(255, 123, 0, 0.4)',
+            border: '2px solid #00509d',
+            boxShadow: '0 0 12px rgba(0, 80, 157, 0.4)',
             height: '36px'
           }}>
             <img 
-              src="./assets/images/logo_pequenos_cientificos.png" 
-              alt="Pequeños Científicos" 
-              style={{ maxHeight: '30px', width: 'auto', objectFit: 'contain' }}
+              src="./assets/images/logo_ups.png" 
+              alt="Universidad Politécnica Salesiana" 
+              style={{ maxHeight: '28px', width: 'auto', objectFit: 'contain' }}
             />
           </div>
 
-          <button
-            onClick={onExit}
-            className="tactile-btn"
-            style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.5)',
-              color: '#f87171',
-              borderRadius: '10px',
-              padding: '6px 12px',
-              fontSize: '0.76rem',
-              fontWeight: 800,
+          {/* MISIÓN / TÍTULO DEL EXPERIMENTO (SELECTOR RÁPIDO) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => setIsExpListOpen(!isExpListOpen)}
+              className="tactile-btn"
+              style={{
+                background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.2) 0%, rgba(2, 132, 199, 0.3) 100%)',
+                border: '1.5px solid #00e5ff',
+                borderRadius: '12px',
+                padding: '5px 14px',
+                color: '#ffffff',
+                fontWeight: 800,
+                fontSize: '0.85rem',
+                letterSpacing: '0.04em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer'
+              }}
+              title="Haz clic para explorar otros experimentos"
+            >
+              <FlaskConical size={15} color="#00e5ff" />
+              <span style={{ textTransform: 'uppercase' }}>Misión:</span>
+              <span style={{ 
+                background: '#00e5ff', 
+                color: '#030812', 
+                padding: '2px 8px', 
+                borderRadius: '12px', 
+                fontWeight: 900,
+                fontSize: '0.78rem'
+              }}>
+                {experimentoActual.titulo}
+              </span>
+              <Grid size={13} color="#94a3b8" />
+            </button>
+          </div>
+
+          {/* LOGO PEQUEÑOS CIENTÍFICOS & SALIR */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '5px',
-              cursor: 'pointer'
-            }}
-            title="Volver al Portal"
-          >
-            <X size={14} />
-            <span>Salir</span>
-          </button>
-        </div>
-      </header>
+              background: 'rgba(255, 255, 255, 0.96)',
+              padding: '2px 10px',
+              borderRadius: '10px',
+              border: '2px solid #ff7b00',
+              boxShadow: '0 0 12px rgba(255, 123, 0, 0.4)',
+              height: '36px'
+            }}>
+              <img 
+                src="./assets/images/logo_pequenos_cientificos.png" 
+                alt="Pequeños Científicos" 
+                style={{ maxHeight: '30px', width: 'auto', objectFit: 'contain' }}
+              />
+            </div>
+
+            <button
+              onClick={onExit}
+              className="tactile-btn"
+              style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.5)',
+                color: '#f87171',
+                borderRadius: '10px',
+                padding: '6px 12px',
+                fontSize: '0.76rem',
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                cursor: 'pointer'
+              }}
+              title="Volver al Portal"
+            >
+              <X size={14} />
+              <span>Salir</span>
+            </button>
+          </div>
+        </header>
+      )}
 
       {/* SELECTOR DESPLEGABLE DE EXPERIMENTOS */}
       {isExpListOpen && (
@@ -661,241 +718,245 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
         flex: 1,
         minHeight: 0,
         display: 'grid',
-        gridTemplateColumns: 'minmax(280px, 330px) 1fr',
-        gap: '14px',
-        padding: '10px 14px',
+        gridTemplateColumns: isRobotica ? '1fr' : 'minmax(280px, 330px) 1fr',
+        gap: isRobotica ? '0px' : '14px',
+        padding: isRobotica ? (isVisorExpandido ? '0px' : '4px 10px 4px 10px') : '10px 14px',
         alignItems: 'stretch',
         position: 'relative',
         zIndex: 5
       }}>
 
-        {/* 📋 PANEL IZQUIERDO: LISTA DE PASOS CON BATERÍA DE ENERGÍA Y GATING */}
-        <aside style={{
-          height: '100%',
-          background: 'linear-gradient(180deg, rgba(8, 22, 42, 0.94) 0%, rgba(4, 12, 24, 0.98) 100%)',
-          border: '2px solid rgba(0, 229, 255, 0.35)',
-          borderRadius: '18px',
-          padding: '12px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 229, 255, 0.05)',
-          backdropFilter: 'blur(14px)',
-          minHeight: 0,
-          overflow: 'hidden'
-        }}>
-
-          {/* ⚡ BATERÍA DE PLASMA / AVANCE CONTINUO ESTILO VIDEOJUEGO */}
-          <div style={{
-            flexShrink: 0,
-            background: 'rgba(3, 12, 24, 0.85)',
-            border: '1.5px solid #00e5ff',
-            borderRadius: '12px',
-            padding: '10px 12px',
-            boxShadow: '0 0 15px rgba(0, 229, 255, 0.2)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Zap size={15} color="#00e5ff" />
-                <span style={{ fontSize: '0.78rem', fontWeight: 900, color: '#f8fafc', letterSpacing: '0.05em' }}>
-                  ENERGÍA DE MISIÓN
-                </span>
-              </div>
-              <span style={{ 
-                fontSize: '1rem', 
-                fontWeight: 900, 
-                color: porcentajeFluido === 100 ? '#10b981' : '#00e5ff',
-                fontFamily: 'monospace'
-              }}>
-                {porcentajeFluido}%
-              </span>
-            </div>
-
-            {/* Barra de plasma segmentada con avance continuo en tiempo real */}
-            <div style={{
-              height: '9px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              border: '1px solid rgba(0, 229, 255, 0.3)',
-              position: 'relative'
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${porcentajeFluido}%`,
-                background: porcentajeFluido === 100 
-                  ? 'linear-gradient(90deg, #00e5ff 0%, #10b981 100%)' 
-                  : 'linear-gradient(90deg, #00e5ff 0%, #38bdf8 70%, #fbbf24 100%)',
-                boxShadow: '0 0 10px #00e5ff',
-                transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              }} />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '0.68rem', color: '#94a3b8' }}>
-              <span>Paso {pasoIndex + 1} de {totalPasos}</span>
-              <span>{modoDocenteLibre ? '🔓 Desbloqueo Docente' : '🔒 Secuencia Guiada'}</span>
-            </div>
-          </div>
-
-          {/* LISTA DE PASOS CON CANDADO SUTIL / GATING */}
-          <div style={{
-            flex: 1,
-            minHeight: 0,
+        {/* 📋 PANEL IZQUIERDO: LISTA DE PASOS CON BATERÍA DE ENERGÍA Y GATING (SOLO EN CIENCIAS / VIDEO) */}
+        {!isRobotica && (
+          <aside style={{
+            height: '100%',
+            background: 'linear-gradient(180deg, rgba(8, 22, 42, 0.94) 0%, rgba(4, 12, 24, 0.98) 100%)',
+            border: '2px solid rgba(0, 229, 255, 0.35)',
+            borderRadius: '18px',
+            padding: '12px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '6px',
-            overflowY: 'auto',
-            paddingRight: '4px'
+            gap: '10px',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 229, 255, 0.05)',
+            backdropFilter: 'blur(14px)',
+            minHeight: 0,
+            overflow: 'hidden'
           }}>
-            {pasos.map((paso, idx) => {
-              const isCurrent = idx === pasoIndex;
-              const isDone = !!pasosCompletados[`${experimentoActual.id}-${idx}`];
-              const isUnlocked = isPasoDesbloqueado(idx);
-              const categoriaColor = paso.categoriaColor || '#2ce4ff';
 
-              return (
-                <button
-                  key={paso.id || idx}
-                  onClick={() => seleccionarPaso(idx)}
-                  className="tactile-btn"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '8px 10px',
-                    borderRadius: '12px',
-                    background: isCurrent 
-                      ? 'linear-gradient(90deg, rgba(0, 229, 255, 0.26) 0%, rgba(8, 30, 60, 0.9) 100%)' 
-                      : isDone 
-                      ? 'rgba(16, 185, 129, 0.1)' 
-                      : isUnlocked 
-                      ? 'rgba(255, 255, 255, 0.03)'
-                      : 'rgba(15, 23, 42, 0.4)',
-                    border: isCurrent 
-                      ? '1.5px solid #00e5ff' 
-                      : isDone 
-                      ? '1px solid rgba(16, 185, 129, 0.5)' 
-                      : '1px solid rgba(255, 255, 255, 0.08)',
-                    boxShadow: isCurrent ? '0 0 14px rgba(0, 229, 255, 0.3)' : 'none',
-                    opacity: isUnlocked ? 1 : 0.48,
-                    cursor: isUnlocked ? 'pointer' : 'not-allowed',
-                    textAlign: 'left',
-                    flexShrink: 0
-                  }}
-                  title={isUnlocked ? `Ir a ${paso.titulo}` : `Paso bloqueado. Completa el Paso ${idx} primero.`}
-                >
-                  {/* CÍRCULO CON NÚMERO, CHECK O CANDADO */}
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    background: isCurrent 
-                      ? categoriaColor 
-                      : isDone 
-                      ? '#10b981' 
-                      : isUnlocked 
-                      ? 'rgba(255, 255, 255, 0.08)' 
-                      : 'rgba(100, 116, 139, 0.2)',
-                    color: isCurrent || isDone ? '#030812' : '#ffffff',
-                    border: `1.5px solid ${isDone ? '#10b981' : isUnlocked ? categoriaColor : '#475569'}`,
-                    boxShadow: isCurrent ? `0 0 10px ${categoriaColor}` : 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 900,
-                    fontSize: '0.8rem',
-                    flexShrink: 0
-                  }}>
-                    {isDone ? (
-                      <Check size={14} strokeWidth={3} />
-                    ) : !isUnlocked ? (
-                      <Lock size={12} color="#94a3b8" />
-                    ) : (
-                      paso.numero || idx + 1
-                    )}
-                  </div>
+            {/* ⚡ BATERÍA DE PLASMA / AVANCE CONTINUO ESTILO VIDEOJUEGO */}
+            <div style={{
+              flexShrink: 0,
+              background: 'rgba(3, 12, 24, 0.85)',
+              border: '1.5px solid #00e5ff',
+              borderRadius: '12px',
+              padding: '10px 12px',
+              boxShadow: '0 0 15px rgba(0, 229, 255, 0.2)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Zap size={15} color="#00e5ff" />
+                  <span style={{ fontSize: '0.78rem', fontWeight: 900, color: '#f8fafc', letterSpacing: '0.05em' }}>
+                    ENERGÍA DE MISIÓN
+                  </span>
+                </div>
+                <span style={{ 
+                  fontSize: '1rem', 
+                  fontWeight: 900, 
+                  color: porcentajeFluido === 100 ? '#10b981' : '#00e5ff',
+                  fontFamily: 'monospace'
+                }}>
+                  {porcentajeFluido}%
+                </span>
+              </div>
 
-                  {/* TEXTO DEL PASO */}
-                  <div style={{ flexGrow: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: '0.64rem',
-                      fontWeight: 900,
-                      color: isDone ? '#10b981' : categoriaColor,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
+              {/* Barra de plasma segmentada con avance continuo en tiempo real */}
+              <div style={{
+                height: '9px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: '1px solid rgba(0, 229, 255, 0.3)',
+                position: 'relative'
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${porcentajeFluido}%`,
+                  background: porcentajeFluido === 100 
+                    ? 'linear-gradient(90deg, #00e5ff 0%, #10b981 100%)' 
+                    : 'linear-gradient(90deg, #00e5ff 0%, #38bdf8 70%, #fbbf24 100%)',
+                  boxShadow: '0 0 10px #00e5ff',
+                  transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }} />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '0.68rem', color: '#94a3b8' }}>
+                <span>Paso {pasoIndex + 1} de {totalPasos}</span>
+                <span>{modoDocenteLibre ? '🔓 Desbloqueo Docente' : '🔒 Secuencia Guiada'}</span>
+              </div>
+            </div>
+
+            {/* LISTA DE PASOS CON CANDADO SUTIL / GATING */}
+            <div style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px',
+              overflowY: 'auto',
+              paddingRight: '4px'
+            }}>
+              {pasos.map((paso, idx) => {
+                const isCurrent = idx === pasoIndex;
+                const isDone = !!pasosCompletados[`${experimentoActual.id}-${idx}`];
+                const isUnlocked = isPasoDesbloqueado(idx);
+                const categoriaColor = paso.categoriaColor || '#2ce4ff';
+
+                return (
+                  <button
+                    key={paso.id || idx}
+                    onClick={() => seleccionarPaso(idx)}
+                    className="tactile-btn"
+                    style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      <span>{paso.categoria || 'PASO'}</span>
-                      {isDone && <span style={{ fontSize: '0.6rem', color: '#10b981' }}>✓ LISTO</span>}
-                    </div>
+                      gap: '10px',
+                      padding: '8px 10px',
+                      borderRadius: '12px',
+                      background: isCurrent 
+                        ? 'linear-gradient(90deg, rgba(0, 229, 255, 0.26) 0%, rgba(8, 30, 60, 0.9) 100%)' 
+                        : isDone 
+                        ? 'rgba(16, 185, 129, 0.1)' 
+                        : isUnlocked 
+                        ? 'rgba(255, 255, 255, 0.03)'
+                        : 'rgba(15, 23, 42, 0.4)',
+                      border: isCurrent 
+                        ? '1.5px solid #00e5ff' 
+                        : isDone 
+                        ? '1px solid rgba(16, 185, 129, 0.5)' 
+                        : '1px solid rgba(255, 255, 255, 0.08)',
+                      boxShadow: isCurrent ? '0 0 14px rgba(0, 229, 255, 0.3)' : 'none',
+                      opacity: isUnlocked ? 1 : 0.48,
+                      cursor: isUnlocked ? 'pointer' : 'not-allowed',
+                      textAlign: 'left',
+                      flexShrink: 0
+                    }}
+                    title={isUnlocked ? `Ir a ${paso.titulo}` : `Paso bloqueado. Completa el Paso ${idx} primero.`}
+                  >
+                    {/* CÍRCULO CON NÚMERO, CHECK O CANDADO */}
                     <div style={{
-                      fontSize: '0.82rem',
-                      fontWeight: 700,
-                      color: isCurrent ? '#ffffff' : '#cbd5e1',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: isCurrent 
+                        ? categoriaColor 
+                        : isDone 
+                        ? '#10b981' 
+                        : isUnlocked 
+                        ? 'rgba(255, 255, 255, 0.08)' 
+                        : 'rgba(100, 116, 139, 0.2)',
+                      color: isCurrent || isDone ? '#030812' : '#ffffff',
+                      border: `1.5px solid ${isDone ? '#10b981' : isUnlocked ? categoriaColor : '#475569'}`,
+                      boxShadow: isCurrent ? `0 0 10px ${categoriaColor}` : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 900,
+                      fontSize: '0.8rem',
+                      flexShrink: 0
                     }}>
-                      {paso.titulo}
+                      {isDone ? (
+                        <Check size={14} strokeWidth={3} />
+                      ) : !isUnlocked ? (
+                        <Lock size={12} color="#94a3b8" />
+                      ) : (
+                        paso.numero || idx + 1
+                      )}
                     </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </aside>
+
+                    {/* TEXTO DEL PASO */}
+                    <div style={{ flexGrow: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: '0.64rem',
+                        fontWeight: 900,
+                        color: isDone ? '#10b981' : categoriaColor,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <span>{paso.categoria || 'PASO'}</span>
+                        {isDone && <span style={{ fontSize: '0.6rem', color: '#10b981' }}>✓ LISTO</span>}
+                      </div>
+                      <div style={{
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        color: isCurrent ? '#ffffff' : '#cbd5e1',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {paso.titulo}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+        )}
 
         {/* 📺 ÁREA CENTRAL: HOLOSCREEN FLANQUEADO POR GRANDES FLECHAS LATERALES */}
         <div style={{
           height: '100%',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          gap: isRobotica ? '0px' : '10px',
           minHeight: 0,
           position: 'relative'
         }}>
 
-          {/* ◀️ GRAN BOTÓN LATERAL IZQUIERDO (PASO ANTERIOR) */}
-          <button
-            onClick={handlePrevStep}
-            disabled={pasoIndex === 0}
-            className="floating-nav-btn"
-            style={{
-              flexShrink: 0,
-              width: '46px',
-              height: '100px',
-              borderRadius: '14px',
-              background: pasoIndex === 0 
-                ? 'rgba(15, 23, 42, 0.4)' 
-                : 'linear-gradient(180deg, rgba(8, 25, 48, 0.9) 0%, rgba(3, 12, 24, 0.95) 100%)',
-              border: pasoIndex === 0 ? '1px solid rgba(255, 255, 255, 0.08)' : '2px solid #00e5ff',
-              boxShadow: pasoIndex === 0 ? 'none' : '0 0 16px rgba(0, 229, 255, 0.35)',
-              color: pasoIndex === 0 ? '#475569' : '#00e5ff',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: pasoIndex === 0 ? 'not-allowed' : 'pointer',
-              gap: '4px'
-            }}
-            title={pasoIndex === 0 ? 'Primer paso de la misión' : 'Regresar al paso anterior'}
-          >
-            <ChevronLeft size={28} strokeWidth={3} />
-            <span style={{ fontSize: '0.62rem', fontWeight: 900, writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-              ATRÁS
-            </span>
-          </button>
+          {/* ◀️ GRAN BOTÓN LATERAL IZQUIERDO (PASO ANTERIOR - SOLO EN CIENCIAS) */}
+          {!isRobotica && (
+            <button
+              onClick={handlePrevStep}
+              disabled={pasoIndex === 0}
+              className="floating-nav-btn"
+              style={{
+                flexShrink: 0,
+                width: '46px',
+                height: '100px',
+                borderRadius: '14px',
+                background: pasoIndex === 0 
+                  ? 'rgba(15, 23, 42, 0.4)' 
+                  : 'linear-gradient(180deg, rgba(8, 25, 48, 0.9) 0%, rgba(3, 12, 24, 0.95) 100%)',
+                border: pasoIndex === 0 ? '1px solid rgba(255, 255, 255, 0.08)' : '2px solid #00e5ff',
+                boxShadow: pasoIndex === 0 ? 'none' : '0 0 16px rgba(0, 229, 255, 0.35)',
+                color: pasoIndex === 0 ? '#475569' : '#00e5ff',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: pasoIndex === 0 ? 'not-allowed' : 'pointer',
+                gap: '4px'
+              }}
+              title={pasoIndex === 0 ? 'Primer paso de la misión' : 'Regresar al paso anterior'}
+            >
+              <ChevronLeft size={28} strokeWidth={3} />
+              <span style={{ fontSize: '0.62rem', fontWeight: 900, writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+                ATRÁS
+              </span>
+            </button>
+          )}
 
           {/* PANTALLA PRINCIPAL HOLOSCREEN */}
           <main style={{
             flex: 1,
             height: '100%',
             background: 'linear-gradient(180deg, #06152b 0%, #030c1a 100%)',
-            border: '2.5px solid #00e5ff',
-            borderRadius: '20px',
-            boxShadow: '0 0 30px rgba(0, 229, 255, 0.35), inset 0 0 25px rgba(0, 229, 255, 0.08)',
+            border: isVisorExpandido ? 'none' : '2.5px solid #00e5ff',
+            borderRadius: isVisorExpandido ? '0px' : '20px',
+            boxShadow: isVisorExpandido ? 'none' : '0 0 30px rgba(0, 229, 255, 0.35), inset 0 0 25px rgba(0, 229, 255, 0.08)',
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
@@ -932,56 +993,161 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase'
                 }}>
-                  {experimentoActual.titulo} · {pasoActual.categoria}
+                  {isRobotica ? 'TALLER DE ROBÓTICA · VEX IQ 2.0' : `${experimentoActual.titulo} · ${pasoActual.categoria}`}
                 </div>
                 <h2 style={{
-                  fontSize: '1.25rem',
+                  fontSize: isRobotica ? '1.15rem' : '1.25rem',
                   fontWeight: 900,
                   color: '#ffffff',
                   margin: 0
                 }}>
-                  {pasoActual.titulo}
+                  {isRobotica ? experimentoActual.titulo : pasoActual.titulo}
                 </h2>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{
-                  background: isPasoActualCompletado ? 'rgba(16, 185, 129, 0.2)' : 'rgba(0, 229, 255, 0.15)',
-                  border: `1.5px solid ${isPasoActualCompletado ? '#10b981' : '#00e5ff'}`,
-                  color: isPasoActualCompletado ? '#10b981' : '#00e5ff',
-                  padding: '3px 10px',
-                  borderRadius: '16px',
-                  fontSize: '0.78rem',
-                  fontWeight: 900,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  {isPasoActualCompletado ? <Check size={12} strokeWidth={3} /> : null}
-                  <span>PASO {pasoIndex + 1}/{totalPasos}</span>
-                </span>
+              {/* Botonera superior: Selector de pestañas 3D / PDF en Robótica, o paso/guía en Ciencias */}
+              {isRobotica ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    onClick={() => {
+                      setRoboticaTab('3d');
+                      playBeep(700, 'sine', 0.05);
+                    }}
+                    className="tactile-btn"
+                    style={{
+                      padding: '5px 14px',
+                      borderRadius: '10px',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      background: roboticaTab === '3d' ? 'rgba(0, 229, 255, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                      border: `1.5px solid ${roboticaTab === '3d' ? '#00e5ff' : 'rgba(255, 255, 255, 0.15)'}`,
+                      color: roboticaTab === '3d' ? '#00e5ff' : '#cbd5e1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: roboticaTab === '3d' ? '0 0 12px rgba(0, 229, 255, 0.3)' : 'none'
+                    }}
+                  >
+                    <span>🪐 Visor 3D Interactivo</span>
+                  </button>
 
-                <button
-                  onClick={() => setIsHelpModalOpen(true)}
-                  className="tactile-btn"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.25)',
-                    color: '#ffffff',
-                    padding: '4px 10px',
+                  <button
+                    onClick={() => {
+                      setRoboticaTab('pdf');
+                      playBeep(700, 'sine', 0.05);
+                    }}
+                    className="tactile-btn"
+                    style={{
+                      padding: '5px 14px',
+                      borderRadius: '10px',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      background: roboticaTab === 'pdf' ? 'rgba(255, 0, 127, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                      border: `1.5px solid ${roboticaTab === 'pdf' ? '#ff007f' : 'rgba(255, 255, 255, 0.15)'}`,
+                      color: roboticaTab === 'pdf' ? '#ff007f' : '#cbd5e1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: roboticaTab === 'pdf' ? '0 0 12px rgba(255, 0, 127, 0.3)' : 'none'
+                    }}
+                  >
+                    <span>📄 Manual PDF Oficial</span>
+                  </button>
+
+                  {/* 🔭 BOTÓN MODO EXPANDIDO / RESTAURAR: MAXIMIZA LA ALTURA PARA QUE NINGUNA PIEZA SE RECORTE */}
+                  <button
+                    onClick={() => {
+                      setIsVisorExpandido(!isVisorExpandido);
+                      playBeep(isVisorExpandido ? 500 : 800, 'sine', 0.06);
+                      showToast(isVisorExpandido ? '🎛️ Cabina Espacial Restaurada' : '🔭 Visor Expandido: 100% Espacio para Piezas 3D');
+                    }}
+                    className="tactile-btn"
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.74rem',
+                      fontWeight: 800,
+                      background: isVisorExpandido ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(5, 150, 105, 0.6) 100%)' : 'rgba(0, 229, 255, 0.15)',
+                      border: `1.5px solid ${isVisorExpandido ? '#34d399' : '#00e5ff'}`,
+                      color: isVisorExpandido ? '#ffffff' : '#00e5ff',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: isVisorExpandido ? '0 0 14px rgba(16, 185, 129, 0.4)' : 'none'
+                    }}
+                    title={isVisorExpandido ? "Restaurar cabina espacial completa" : "Modo Expandido: maximiza la altura para ver todas las piezas y neumáticos sin recortes"}
+                  >
+                    {isVisorExpandido ? <Minimize2 size={13} /> : <Maximize size={13} />}
+                    <span>{isVisorExpandido ? 'Restaurar' : 'Modo Expandido'}</span>
+                  </button>
+
+                  <a
+                    href={roboticaTab === 'pdf' ? (experimentoActual.pdfManualUrl || 'https://content.vexrobotics.com/stem-labs/iq/builds/basebot/iq-2nd-gen-basebot-rev12.pdf') : (experimentoActual.visor3dUrl || 'https://instructions.online/?id=4093-VEX_IQ_Basebot_2.0')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tactile-btn"
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      color: '#f8fafc',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                    title="Abrir en pestaña completa externa"
+                  >
+                    <Maximize2 size={13} />
+                    <span>Pestaña Completa</span>
+                  </a>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{
+                    background: isPasoActualCompletado ? 'rgba(16, 185, 129, 0.2)' : 'rgba(0, 229, 255, 0.15)',
+                    border: `1.5px solid ${isPasoActualCompletado ? '#10b981' : '#00e5ff'}`,
+                    color: isPasoActualCompletado ? '#10b981' : '#00e5ff',
+                    padding: '3px 10px',
                     borderRadius: '16px',
-                    fontSize: '0.75rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
+                    fontSize: '0.78rem',
+                    fontWeight: 900,
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
-                  }}
-                >
-                  <Eye size={12} />
-                  <span>GUÍA</span>
-                </button>
-              </div>
+                  }}>
+                    {isPasoActualCompletado ? <Check size={12} strokeWidth={3} /> : null}
+                    <span>PASO {pasoIndex + 1}/{totalPasos}</span>
+                  </span>
+
+                  <button
+                    onClick={() => setIsHelpModalOpen(true)}
+                    className="tactile-btn"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.25)',
+                      color: '#ffffff',
+                      padding: '4px 10px',
+                      borderRadius: '16px',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Eye size={12} />
+                    <span>GUÍA</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* CENTRO: DISPLAY MULTIMEDIA 100% */}
@@ -994,10 +1160,10 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: isMaterialsView || !resolvedVideoUrl ? '16px' : '0px',
+              padding: isMaterialsView || (!resolvedVideoUrl && !isRobotica) ? '16px' : '0px',
               textAlign: 'center',
               overflow: 'hidden',
-              background: resolvedVideoUrl ? '#000000' : 'transparent'
+              background: resolvedVideoUrl || isRobotica ? '#000000' : 'transparent'
             }}>
               {/* VISTA DE MATERIALES */}
               {isMaterialsView ? (
@@ -1153,6 +1319,113 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
                     </>
                   )}
                 </div>
+              ) : isRobotica ? (
+                /* AMBOS IFRAMES MONTADOS SIMULTÁNEAMENTE (PRESERVA PROGRESO Y ROTACIÓN 3D) */
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  background: '#040914'
+                }}>
+                  {experimentoActual.visor3dUrl ? (
+                    <iframe
+                      src={experimentoActual.visor3dUrl}
+                      title="Visor Robótica 3D"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                        background: '#ffffff',
+                        display: roboticaTab === '3d' ? 'block' : 'none'
+                      }}
+                      allow="fullscreen; accelerometer; gyroscope"
+                      allowFullScreen
+                    />
+                  ) : roboticaTab === '3d' ? (
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'radial-gradient(circle at center, rgba(16, 185, 129, 0.08) 0%, rgba(2, 6, 23, 0.95) 80%)',
+                      color: '#94a3b8',
+                      padding: '30px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        width: '74px',
+                        height: '74px',
+                        borderRadius: '20px',
+                        background: 'rgba(16, 185, 129, 0.12)',
+                        border: '1.5px solid rgba(16, 185, 129, 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '16px',
+                        boxShadow: '0 0 25px rgba(16, 185, 129, 0.2)'
+                      }}>
+                        <Box size={36} color="#10b981" />
+                      </div>
+                      <h4 style={{ color: '#f8fafc', fontSize: '1.25rem', fontWeight: 900, marginBottom: '8px' }}>
+                        Sin Visor 3D Configurado
+                      </h4>
+                      <p style={{ maxWidth: '440px', fontSize: '0.88rem', lineHeight: 1.5, margin: 0, color: '#94a3b8' }}>
+                        Este experimento de Robótica no tiene asignado un enlace de visor 3D interactivo. El docente puede configurarlo desde el panel de <strong>Gestión Docente</strong> pegando la URL de VEX o CAD 3D.
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {experimentoActual.pdfManualUrl ? (
+                    <iframe
+                      src={experimentoActual.pdfManualUrl}
+                      title="Manual Técnico PDF"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                        background: '#333333',
+                        display: roboticaTab === 'pdf' ? 'block' : 'none'
+                      }}
+                    />
+                  ) : roboticaTab === 'pdf' ? (
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'radial-gradient(circle at center, rgba(255, 0, 127, 0.08) 0%, rgba(2, 6, 23, 0.95) 80%)',
+                      color: '#94a3b8',
+                      padding: '30px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        width: '74px',
+                        height: '74px',
+                        borderRadius: '20px',
+                        background: 'rgba(255, 0, 127, 0.12)',
+                        border: '1.5px solid rgba(255, 0, 127, 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '16px',
+                        boxShadow: '0 0 25px rgba(255, 0, 127, 0.2)'
+                      }}>
+                        <FileText size={36} color="#ff007f" />
+                      </div>
+                      <h4 style={{ color: '#f8fafc', fontSize: '1.25rem', fontWeight: 900, marginBottom: '8px' }}>
+                        Sin Manual PDF Configurado
+                      </h4>
+                      <p style={{ maxWidth: '440px', fontSize: '0.88rem', lineHeight: 1.5, margin: 0, color: '#94a3b8' }}>
+                        No se ha vinculado un manual PDF para esta misión. Puedes adjuntar la URL del PDF técnico oficial desde <strong>Gestión Docente</strong>.
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
               ) : (
                 /* DIANA SCI-FI SI NO HAY VIDEO */
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
@@ -1224,19 +1497,19 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
               )}
             </div>
 
-            {/* BARRA DE SCRUBBER / TIEMPO */}
-            <div style={{
-              flexShrink: 0,
-              position: 'relative',
-              zIndex: 5,
-              padding: '8px 18px',
-              background: 'rgba(3, 10, 22, 0.95)',
-              borderTop: '1px solid rgba(0, 229, 255, 0.25)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* BARRA DE SCRUBBER / TIEMPO (SOLO EXPERIMENTOS DE CIENCIAS / VIDEO) */}
+            {!isRobotica && (
+              <div style={{
+                flexShrink: 0,
+                position: 'relative',
+                zIndex: 5,
+                padding: '8px 18px',
+                background: 'rgba(3, 10, 22, 0.95)',
+                borderTop: '1px solid rgba(0, 229, 255, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
                 {/* SCRUBBER SINCRONIZADO */}
                 <div 
                   onClick={(e) => {
@@ -1281,64 +1554,66 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
                   {formatVideoTime(currentTime)} / {formatVideoTime(effectiveDuration)}
                 </span>
               </div>
-            </div>
+            )}
           </main>
 
-          {/* ▶️ GRAN BOTÓN LATERAL DERECHO (PASO SIGUIENTE CON GATING Y PULSO NEÓN) */}
-          <button
-            onClick={handleNextStep}
-            className="floating-nav-btn"
-            style={{
-              flexShrink: 0,
-              width: '46px',
-              height: '100px',
-              borderRadius: '14px',
-              background: !canGoNext
-                ? 'rgba(15, 23, 42, 0.4)'
-                : isPasoActualCompletado 
-                ? 'linear-gradient(180deg, #10b981 0%, #065f46 100%)' 
-                : 'linear-gradient(180deg, rgba(8, 25, 48, 0.9) 0%, rgba(3, 12, 24, 0.95) 100%)',
-              border: !canGoNext 
-                ? '1px solid rgba(255, 255, 255, 0.1)' 
-                : isPasoActualCompletado 
-                ? '2px solid #34d399' 
-                : '2px solid #00e5ff',
-              boxShadow: !canGoNext 
-                ? 'none' 
-                : isPasoActualCompletado 
-                ? '0 0 20px #10b981' 
-                : '0 0 16px rgba(0, 229, 255, 0.35)',
-              color: !canGoNext ? '#64748b' : '#ffffff',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: !canGoNext ? 'not-allowed' : 'pointer',
-              gap: '4px',
-              animation: canGoNext && isPasoActualCompletado ? 'neonPulseGreen 2s infinite' : 'none'
-            }}
-            title={
-              !canGoNext 
-                ? '🔒 Debes terminar de ver el video para avanzar' 
-                : pasoIndex === totalPasos - 1 
-                ? 'Finalizar misión científica' 
-                : 'Avanzar al siguiente paso'
-            }
-          >
-            {!canGoNext ? (
-              <Lock size={20} color="#64748b" />
-            ) : (
-              <ChevronRight size={28} strokeWidth={3} />
-            )}
-            <span style={{ 
-              fontSize: '0.62rem', 
-              fontWeight: 900, 
-              writingMode: 'vertical-rl',
-              color: !canGoNext ? '#64748b' : '#ffffff'
-            }}>
-              {!canGoNext ? 'BLOQ' : 'SIGUIENTE'}
-            </span>
-          </button>
+          {/* ▶️ GRAN BOTÓN LATERAL DERECHO (PASO SIGUIENTE CON GATING - SOLO EN CIENCIAS) */}
+          {!isRobotica && (
+            <button
+              onClick={handleNextStep}
+              className="floating-nav-btn"
+              style={{
+                flexShrink: 0,
+                width: '46px',
+                height: '100px',
+                borderRadius: '14px',
+                background: !canGoNext
+                  ? 'rgba(15, 23, 42, 0.4)'
+                  : isPasoActualCompletado 
+                  ? 'linear-gradient(180deg, #10b981 0%, #065f46 100%)' 
+                  : 'linear-gradient(180deg, rgba(8, 25, 48, 0.9) 0%, rgba(3, 12, 24, 0.95) 100%)',
+                border: !canGoNext 
+                  ? '1px solid rgba(255, 255, 255, 0.1)' 
+                  : isPasoActualCompletado 
+                  ? '2px solid #34d399' 
+                  : '2px solid #00e5ff',
+                boxShadow: !canGoNext 
+                  ? 'none' 
+                  : isPasoActualCompletado 
+                  ? '0 0 20px #10b981' 
+                  : '0 0 16px rgba(0, 229, 255, 0.35)',
+                color: !canGoNext ? '#64748b' : '#ffffff',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: !canGoNext ? 'not-allowed' : 'pointer',
+                gap: '4px',
+                animation: canGoNext && isPasoActualCompletado ? 'neonPulseGreen 2s infinite' : 'none'
+              }}
+              title={
+                !canGoNext 
+                  ? '🔒 Debes terminar de ver el video para avanzar' 
+                  : pasoIndex === totalPasos - 1 
+                  ? 'Finalizar misión científica' 
+                  : 'Avanzar al siguiente paso'
+              }
+            >
+              {!canGoNext ? (
+                <Lock size={20} color="#64748b" />
+              ) : (
+                <ChevronRight size={28} strokeWidth={3} />
+              )}
+              <span style={{ 
+                fontSize: '0.62rem', 
+                fontWeight: 900, 
+                writingMode: 'vertical-rl',
+                color: !canGoNext ? '#64748b' : '#ffffff'
+              }}>
+                {!canGoNext ? 'BLOQ' : 'SIGUIENTE'}
+              </span>
+            </button>
+          )}
         </div>
 
       </div>
@@ -1346,292 +1621,359 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
       {/* ========================================================
           3. CONSOLA INFERIOR DE MANDO REDISEÑADA (TÁCTIL, LIMPIA Y SIN REDUNDANCIA)
           ======================================================== */}
-      <footer style={{
-        flexShrink: 0,
-        zIndex: 10,
-        display: 'grid',
-        gridTemplateColumns: 'auto 1fr auto auto',
-        gap: '16px',
-        alignItems: 'center',
-        background: 'linear-gradient(180deg, #0a1c32 0%, #040e1b 100%)',
-        border: '2px solid rgba(0, 229, 255, 0.35)',
-        borderRadius: '16px',
-        padding: '8px 18px',
-        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(16px)',
-        margin: '0 14px 10px 14px',
-        height: '84px',
-        boxSizing: 'border-box'
-      }}>
-
-        {/* 🎮 MÓDULO 1: CONTROLES DE REPRODUCCIÓN (ALTAMENTE VISUALES, COLORIDOS Y TÁCTILES) */}
-        <div style={{
-          display: 'flex',
+      {(!isRobotica || !isVisorExpandido) && (
+        <footer style={{
+          flexShrink: 0,
+          zIndex: 10,
+          display: isRobotica ? 'flex' : 'grid',
+          gridTemplateColumns: isRobotica ? undefined : 'auto 1fr auto auto',
+          justifyContent: isRobotica ? 'space-between' : undefined,
+          gap: '16px',
           alignItems: 'center',
-          gap: '12px',
-          background: 'linear-gradient(135deg, rgba(6, 22, 46, 0.95) 0%, rgba(2, 10, 22, 0.98) 100%)',
-          border: '1.5px solid rgba(0, 229, 255, 0.4)',
-          borderRadius: '14px',
-          padding: '6px 14px',
-          height: '66px',
-          boxShadow: '0 0 16px rgba(0, 229, 255, 0.15)'
+          background: 'linear-gradient(180deg, #0a1c32 0%, #040e1b 100%)',
+          border: '2px solid rgba(0, 229, 255, 0.35)',
+          borderRadius: '16px',
+          padding: isRobotica ? '4px 16px' : '8px 18px',
+          boxShadow: '0 8px 30px rgba(0, 0, 0, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(16px)',
+          margin: isRobotica ? '0 10px 4px 10px' : '0 14px 10px 14px',
+          height: isRobotica ? '42px' : '84px',
+          boxSizing: 'border-box'
         }}>
-          {/* BOTÓN MAESTRO PLAY / PAUSA: NEÓN VERDE ESMERALDA VIBRANTE */}
-          <button
-            onClick={handleTogglePlay}
-            className="tactile-btn"
-            style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '50%',
-              background: isPlaying 
-                ? 'linear-gradient(135deg, #00e5ff 0%, #0284c7 100%)' 
-                : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              border: isPlaying ? '2.5px solid #ffffff' : '2.5px solid #6ee7b7',
-              boxShadow: isPlaying 
-                ? '0 0 24px #00e5ff, inset 0 0 8px #ffffff' 
-                : '0 0 24px #10b981, inset 0 0 8px #a7f3d0',
+
+          {isRobotica ? (
+          /* MODO ROBÓTICA: BARRA ULTRA LIMPIA, ESPACIO MAXIMIZADO */
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                background: '#10b981',
+                boxShadow: '0 0 10px #10b981'
+              }} />
+              <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#00e5ff', letterSpacing: '0.05em' }}>
+                🤖 MÓDULO ROBÓTICA · VEX IQ BASEBOT
+              </span>
+              <span style={{ fontSize: '0.74rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                • Control paso a paso y lista de piezas 3D integrados directamente en el visor oficial
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button
+                onClick={() => setIsDataModalOpen(true)}
+                className="tactile-btn"
+                style={{
+                  background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+                  border: '1.5px solid #38bdf8',
+                  borderRadius: '10px',
+                  padding: '6px 14px',
+                  color: '#f8fafc',
+                  fontWeight: 800,
+                  fontSize: '0.78rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Edit3 size={14} color="#38bdf8" />
+                <span>Bitácora Robótica</span>
+              </button>
+
+              <button
+                onClick={toggleFullscreen}
+                className="tactile-btn"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: '#1e293b',
+                  border: '1px solid #475569',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+                title="Pantalla Completa"
+              >
+                <Maximize2 size={16} />
+              </button>
+            </div>
+          </>
+        ) : (
+          /* MODO CIENCIAS: CONSOLA DE REPRODUCCIÓN, MATERIALES Y CONTROL DOCENTE */
+          <>
+            {/* 🎮 MÓDULO 1: CONTROLES DE REPRODUCCIÓN (ALTAMENTE VISUALES, COLORIDOS Y TÁCTILES) */}
+            <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              color: '#030812',
-              cursor: 'pointer',
-              flexShrink: 0,
-              animation: !isPlaying ? 'neonPulseGreen 2.5s infinite' : 'none'
-            }}
-            title={isPlaying ? "Pausar video" : "¡Reproducir video!"}
-          >
-            {isPlaying ? (
-              <Pause size={24} strokeWidth={3} />
-            ) : (
-              <Play size={24} strokeWidth={3} style={{ marginLeft: '3px' }} />
-            )}
-          </button>
-
-          {/* BOTONERÍA AUXILIAR: CADA UNO CON SU COLOR DISTINTIVO Y LLAMATIVO */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* 🟡 REINICIAR (ÁMBAR DORADO) */}
-            <button
-              onClick={handleResetStep}
-              className="tactile-btn"
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(180, 83, 9, 0.4) 100%)',
-                border: '1.5px solid #f59e0b',
-                color: '#fbbf24',
-                boxShadow: '0 0 12px rgba(245, 158, 11, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer'
-              }}
-              title="Reiniciar paso al inicio (00:00)"
-            >
-              <RotateCcw size={18} strokeWidth={2.5} />
-            </button>
-
-            {/* 🔴 DETENER (ROJO RUBÍ VIBRANTE) */}
-            <button
-              onClick={handleStop}
-              className="tactile-btn"
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(185, 28, 28, 0.4) 100%)',
-                border: '1.5px solid #ef4444',
-                color: '#f87171',
-                boxShadow: '0 0 12px rgba(239, 68, 68, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer'
-              }}
-              title="Detener video"
-            >
-              <Square size={16} strokeWidth={2.5} fill="#f87171" />
-            </button>
-
-            {/* 🟣 AUDIO & MUTE CONTROL */}
-            <button
-              onClick={handleToggleMute}
-              className="tactile-btn"
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '10px',
-                background: !soundEnabled
-                  ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(185, 28, 28, 0.5) 100%)'
-                  : 'linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(126, 34, 206, 0.4) 100%)',
-                border: `1.5px solid ${!soundEnabled ? '#ef4444' : '#c084fc'}`,
-                color: !soundEnabled ? '#f87171' : '#e9d5ff',
-                boxShadow: !soundEnabled ? '0 0 12px rgba(239, 68, 68, 0.45)' : '0 0 12px rgba(168, 85, 247, 0.35)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                position: 'relative'
-              }}
-              title={soundEnabled ? "Silenciar video y efectos (MUTE)" : "Activar sonido del video"}
-            >
-              {!soundEnabled ? <VolumeX size={18} strokeWidth={2.5} /> : <Volume2 size={18} strokeWidth={2.5} />}
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ 
-              fontSize: '0.72rem', 
-              fontWeight: 900, 
-              color: isPlaying ? '#00e5ff' : '#10b981',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase'
-            }}>
-              {isPlaying ? 'EN TRANSMISIÓN' : 'LISTO / PAUSA'}
-            </span>
-            <span style={{ fontSize: '0.62rem', color: !soundEnabled ? '#f87171' : '#94a3b8', fontWeight: !soundEnabled ? 800 : 400 }}>
-              {!soundEnabled ? '🔇 MUTE ACTIVO' : 'Audio & Video ON'}
-            </span>
-          </div>
-        </div>
-
-        {/* 🔬 MÓDULO 2: MATERIALES DE LABORATORIO (SOLO VISTA DEL ESTUDIANTE, SIN BOTÓN DE SUBIR) */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <button
-            onClick={() => {
-              setIsMaterialsView(!isMaterialsView);
-              playBeep(550, 'sine', 0.08);
-            }}
-            className="tactile-btn"
-            style={{
-              background: isMaterialsView 
-                ? 'linear-gradient(135deg, #ffc936 0%, #f59e0b 100%)' 
-                : 'linear-gradient(135deg, rgba(255, 201, 54, 0.18) 0%, rgba(217, 119, 6, 0.25) 100%)',
-              border: '2px solid #ffc936',
+              gap: '12px',
+              background: 'linear-gradient(135deg, rgba(6, 22, 46, 0.95) 0%, rgba(2, 10, 22, 0.98) 100%)',
+              border: '1.5px solid rgba(0, 229, 255, 0.4)',
               borderRadius: '14px',
-              padding: '10px 22px',
-              color: isMaterialsView ? '#030812' : '#ffc936',
-              fontWeight: 900,
-              fontSize: '0.88rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              boxShadow: '0 0 18px rgba(255, 201, 54, 0.35)',
-              cursor: 'pointer'
-            }}
-          >
-            <FlaskConical size={18} color={isMaterialsView ? '#030812' : '#ffc936'} strokeWidth={2.5} />
-            <span>Reactivos & Materiales ({experimentoActual.materiales?.length || 0})</span>
-          </button>
-        </div>
+              padding: '6px 14px',
+              height: '66px',
+              boxShadow: '0 0 16px rgba(0, 229, 255, 0.15)'
+            }}>
+              {/* BOTÓN MAESTRO PLAY / PAUSA: NEÓN VERDE ESMERALDA VIBRANTE */}
+              <button
+                onClick={handleTogglePlay}
+                className="tactile-btn"
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  background: isPlaying 
+                    ? 'linear-gradient(135deg, #00e5ff 0%, #0284c7 100%)' 
+                    : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  border: isPlaying ? '2.5px solid #ffffff' : '2.5px solid #6ee7b7',
+                  boxShadow: isPlaying 
+                    ? '0 0 24px #00e5ff, inset 0 0 8px #ffffff' 
+                    : '0 0 24px #10b981, inset 0 0 8px #a7f3d0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#030812',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  animation: !isPlaying ? 'neonPulseGreen 2.5s infinite' : 'none'
+                }}
+                title={isPlaying ? "Pausar video" : "¡Reproducir video!"}
+              >
+                {isPlaying ? (
+                  <Pause size={24} strokeWidth={3} />
+                ) : (
+                  <Play size={24} strokeWidth={3} style={{ marginLeft: '3px' }} />
+                )}
+              </button>
 
-        {/* 📝 MÓDULO 3: INVESTIGACIÓN (BITÁCORA & GUÍA DIDÁCTICA) */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '10px'
-        }}>
-          <button
-            onClick={() => setIsDataModalOpen(true)}
-            className="tactile-btn"
-            style={{
-              background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-              border: '1.5px solid #38bdf8',
-              borderRadius: '12px',
-              padding: '8px 14px',
-              color: '#f8fafc',
-              fontWeight: 800,
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <Edit3 size={15} color="#38bdf8" />
-            <span>Bitácora Científica</span>
-          </button>
+              {/* BOTONERÍA AUXILIAR: CADA UNO CON SU COLOR DISTINTIVO Y LLAMATIVO */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* 🟡 REINICIAR (ÁMBAR DORADO) */}
+                <button
+                  onClick={handleResetStep}
+                  className="tactile-btn"
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(180, 83, 9, 0.4) 100%)',
+                    border: '1.5px solid #f59e0b',
+                    color: '#fbbf24',
+                    boxShadow: '0 0 12px rgba(245, 158, 11, 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                  title="Reiniciar paso al inicio (00:00)"
+                >
+                  <RotateCcw size={18} strokeWidth={2.5} />
+                </button>
 
-          <button
-            onClick={() => setIsHelpModalOpen(true)}
-            className="tactile-btn"
-            style={{
-              background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-              border: '1.5px solid #a855f7',
-              borderRadius: '12px',
-              padding: '8px 14px',
-              color: '#f8fafc',
-              fontWeight: 800,
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <BookOpen size={15} color="#c084fc" />
-            <span>Guía Didáctica</span>
-          </button>
-        </div>
+                {/* 🔴 DETENER (ROJO RUBÍ VIBRANTE) */}
+                <button
+                  onClick={handleStop}
+                  className="tactile-btn"
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(185, 28, 28, 0.4) 100%)',
+                    border: '1.5px solid #ef4444',
+                    color: '#f87171',
+                    boxShadow: '0 0 12px rgba(239, 68, 68, 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                  title="Detener video"
+                >
+                  <Square size={16} strokeWidth={2.5} fill="#f87171" />
+                </button>
 
-        {/* 🎓 MÓDULO 4: INTERRUPTOR MODO DOCENTE (DESBLOQUEO LIBRE) & PANTALLA COMPLETA */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: '10px'
-        }}>
-          {/* SWITCH PROFESOR */}
-          <button
-            onClick={() => {
-              setModoDocenteLibre(!modoDocenteLibre);
-              playBeep(modoDocenteLibre ? 400 : 750, 'sine', 0.08);
-              showToast(modoDocenteLibre ? '🔒 Modo Estudiante: Secuencia Bloqueada' : '🔓 Modo Docente: Desbloqueo Libre Activo');
-            }}
-            className="tactile-btn"
-            style={{
-              background: modoDocenteLibre ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.06)',
-              border: `1.5px solid ${modoDocenteLibre ? '#10b981' : '#64748b'}`,
-              borderRadius: '10px',
-              padding: '6px 10px',
-              color: modoDocenteLibre ? '#10b981' : '#94a3b8',
-              fontSize: '0.74rem',
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            title="Activar para saltar pasos libremente sin esperar el video (Uso docente)"
-          >
-            {modoDocenteLibre ? <Unlock size={14} /> : <Lock size={14} />}
-            <span>{modoDocenteLibre ? 'Docente ON' : 'Docente OFF'}</span>
-          </button>
+                {/* 🟣 AUDIO & MUTE CONTROL */}
+                <button
+                  onClick={handleToggleMute}
+                  className="tactile-btn"
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: !soundEnabled
+                      ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(185, 28, 28, 0.5) 100%)'
+                      : 'linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(126, 34, 206, 0.4) 100%)',
+                    border: `1.5px solid ${!soundEnabled ? '#ef4444' : '#c084fc'}`,
+                    color: !soundEnabled ? '#f87171' : '#e9d5ff',
+                    boxShadow: !soundEnabled ? '0 0 12px rgba(239, 68, 68, 0.45)' : '0 0 12px rgba(168, 85, 247, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}
+                  title={soundEnabled ? "Silenciar video y efectos (MUTE)" : "Activar sonido del video"}
+                >
+                  {!soundEnabled ? <VolumeX size={18} strokeWidth={2.5} /> : <Volume2 size={18} strokeWidth={2.5} />}
+                </button>
+              </div>
 
-          <button
-            onClick={toggleFullscreen}
-            className="tactile-btn"
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: '#1e293b',
-              border: '1px solid #475569',
-              color: '#ffffff',
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ 
+                  fontSize: '0.72rem', 
+                  fontWeight: 900, 
+                  color: isPlaying ? '#00e5ff' : '#10b981',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase'
+                }}>
+                  {isPlaying ? 'EN TRANSMISIÓN' : 'LISTO / PAUSA'}
+                </span>
+                <span style={{ fontSize: '0.62rem', color: !soundEnabled ? '#f87171' : '#94a3b8', fontWeight: !soundEnabled ? 800 : 400 }}>
+                  {!soundEnabled ? '🔇 MUTE ACTIVO' : 'Audio & Video ON'}
+                </span>
+              </div>
+            </div>
+
+            {/* 🔬 MÓDULO 2: MATERIALES DE LABORATORIO (SOLO VISTA DEL ESTUDIANTE, SIN BOTÓN DE SUBIR) */}
+            <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
-            }}
-            title="Pantalla Completa"
-          >
-            <Maximize2 size={16} />
-          </button>
-        </div>
+            }}>
+              <button
+                onClick={() => {
+                  setIsMaterialsView(!isMaterialsView);
+                  playBeep(550, 'sine', 0.08);
+                }}
+                className="tactile-btn"
+                style={{
+                  background: isMaterialsView 
+                    ? 'linear-gradient(135deg, #ffc936 0%, #f59e0b 100%)' 
+                    : 'linear-gradient(135deg, rgba(255, 201, 54, 0.18) 0%, rgba(217, 119, 6, 0.25) 100%)',
+                  border: '2px solid #ffc936',
+                  borderRadius: '14px',
+                  padding: '10px 22px',
+                  color: isMaterialsView ? '#030812' : '#ffc936',
+                  fontWeight: 900,
+                  fontSize: '0.88rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  boxShadow: '0 0 18px rgba(255, 201, 54, 0.35)',
+                  cursor: 'pointer'
+                }}
+              >
+                <FlaskConical size={18} color={isMaterialsView ? '#030812' : '#ffc936'} strokeWidth={2.5} />
+                <span>Reactivos & Materiales ({experimentoActual.materiales?.length || 0})</span>
+              </button>
+            </div>
+
+            {/* 📝 MÓDULO 3: INVESTIGACIÓN (BITÁCORA & GUÍA DIDÁCTICA) */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px'
+            }}>
+              <button
+                onClick={() => setIsDataModalOpen(true)}
+                className="tactile-btn"
+                style={{
+                  background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+                  border: '1.5px solid #38bdf8',
+                  borderRadius: '12px',
+                  padding: '8px 14px',
+                  color: '#f8fafc',
+                  fontWeight: 800,
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Edit3 size={15} color="#38bdf8" />
+                <span>Bitácora Científica</span>
+              </button>
+
+              <button
+                onClick={() => setIsHelpModalOpen(true)}
+                className="tactile-btn"
+                style={{
+                  background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+                  border: '1.5px solid #a855f7',
+                  borderRadius: '12px',
+                  padding: '8px 14px',
+                  color: '#f8fafc',
+                  fontWeight: 800,
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <BookOpen size={15} color="#c084fc" />
+                <span>Guía Didáctica</span>
+              </button>
+            </div>
+
+            {/* 🎓 MÓDULO 4: INTERRUPTOR MODO DOCENTE (DESBLOQUEO LIBRE) & PANTALLA COMPLETA */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '10px'
+            }}>
+              {/* SWITCH PROFESOR CON BLOQUEO POR CREDENCIALES */}
+              <button
+                onClick={handleToggleDocenteMode}
+                className="tactile-btn"
+                style={{
+                  background: modoDocenteLibre ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.06)',
+                  border: `1.5px solid ${modoDocenteLibre ? '#10b981' : '#64748b'}`,
+                  borderRadius: '10px',
+                  padding: '6px 10px',
+                  color: modoDocenteLibre ? '#10b981' : '#94a3b8',
+                  fontSize: '0.74rem',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+                title={modoDocenteLibre ? "Modo Docente activo (clic para bloquear secuencia a estudiantes)" : "Desbloquear modo docente con credenciales UPS"}
+              >
+                {modoDocenteLibre ? <Unlock size={14} /> : <Lock size={14} />}
+                <span>{modoDocenteLibre ? 'Docente ON' : 'Docente OFF'}</span>
+              </button>
+
+              <button
+                onClick={toggleFullscreen}
+                className="tactile-btn"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: '#1e293b',
+                  border: '1px solid #475569',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                title="Pantalla Completa"
+              >
+                <Maximize2 size={16} />
+              </button>
+            </div>
+          </>
+        )}
 
       </footer>
+      )}
 
       {/* TOAST FLOTANTE TEMPORAL */}
       {toastMessage && (
@@ -2057,6 +2399,259 @@ export default function NaveEspacialMision({ onExit, onOpenAdmin }) {
             >
               Volver a la Cabina
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL SCI-FI DE AUTORIZACIÓN Y DESBLOQUEO DOCENTE */}
+      {isDocenteUnlockModalOpen && (
+        <div 
+          onClick={() => setIsDocenteUnlockModalOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(2, 6, 18, 0.88)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              background: 'linear-gradient(135deg, rgba(8, 22, 45, 0.98) 0%, rgba(3, 10, 24, 0.99) 100%)',
+              border: '2px solid #00e5ff',
+              borderRadius: '24px',
+              padding: '28px 24px',
+              boxShadow: '0 0 40px rgba(0, 229, 255, 0.35)',
+              position: 'relative',
+              animation: 'fadeIn 0.2s ease-out'
+            }}
+          >
+            <button
+              onClick={() => setIsDocenteUnlockModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: 'none',
+                color: '#94a3b8',
+                cursor: 'pointer',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <X size={18} />
+            </button>
+
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{
+                width: '54px',
+                height: '54px',
+                borderRadius: '16px',
+                background: 'rgba(0, 229, 255, 0.15)',
+                border: '1.5px solid #00e5ff',
+                color: '#00e5ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 12px auto'
+              }}>
+                <Lock size={26} />
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#ffffff', marginBottom: '6px' }}>
+                Desbloqueo Modo Docente
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: '#94a3b8', lineHeight: 1.5, margin: 0 }}>
+                Ingresa las credenciales institucionales de Docente o Administrador UPS para navegar libremente por todos los pasos.
+              </p>
+            </div>
+
+            {docenteUnlockError && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid #ef4444',
+                color: '#fca5a5',
+                padding: '10px 12px',
+                borderRadius: '10px',
+                fontSize: '0.8rem',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <Lock size={14} />
+                <span>{docenteUnlockError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleDocenteUnlockSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#cbd5e1', marginBottom: '6px' }}>
+                  Usuario o Alias Docente
+                </label>
+                <input 
+                  type="text"
+                  value={docenteUnlockUser}
+                  onChange={(e) => setDocenteUnlockUser(e.target.value)}
+                  placeholder="docente@ups.edu.ec o docente"
+                  autoFocus
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    background: 'rgba(15, 23, 42, 0.8)',
+                    border: '1.5px solid rgba(0, 229, 255, 0.3)',
+                    color: '#ffffff',
+                    fontSize: '0.9rem',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#cbd5e1', marginBottom: '6px' }}>
+                  Contraseña
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type={showDocenteUnlockPass ? 'text' : 'password'}
+                    value={docenteUnlockPass}
+                    onChange={(e) => setDocenteUnlockPass(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px 42px 10px 14px',
+                      borderRadius: '10px',
+                      background: 'rgba(15, 23, 42, 0.8)',
+                      border: '1.5px solid rgba(0, 229, 255, 0.3)',
+                      color: '#ffffff',
+                      fontSize: '0.9rem',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDocenteUnlockPass(!showDocenteUnlockPass)}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#64748b',
+                      cursor: 'pointer',
+                      padding: 0
+                    }}
+                  >
+                    {showDocenteUnlockPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Atajos rápidos de credenciales de prueba */}
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                marginTop: '4px'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDocenteUnlockUser(CREDENCIALES_DEFAULT.DOCENTE.usuario);
+                    setDocenteUnlockPass(CREDENCIALES_DEFAULT.DOCENTE.password);
+                    setDocenteUnlockError('');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '6px 8px',
+                    borderRadius: '8px',
+                    background: 'rgba(0, 229, 255, 0.08)',
+                    border: '1px solid rgba(0, 229, 255, 0.25)',
+                    color: '#00e5ff',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Usar Docente Demo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDocenteUnlockUser(CREDENCIALES_DEFAULT.ADMIN.usuario);
+                    setDocenteUnlockPass(CREDENCIALES_DEFAULT.ADMIN.password);
+                    setDocenteUnlockError('');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '6px 8px',
+                    borderRadius: '8px',
+                    background: 'rgba(245, 158, 11, 0.08)',
+                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                    color: '#f59e0b',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Usar Admin Demo
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsDocenteUnlockModalOpen(false)}
+                  style={{
+                    flex: 1,
+                    padding: '11px',
+                    borderRadius: '10px',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94a3b8',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="tactile-btn"
+                  style={{
+                    flex: 1.5,
+                    padding: '11px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #00e5ff 0%, #0070f3 100%)',
+                    border: '1px solid #00e5ff',
+                    color: '#030812',
+                    fontSize: '0.88rem',
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    boxShadow: '0 0 16px rgba(0, 229, 255, 0.4)'
+                  }}
+                >
+                  Desbloquear
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

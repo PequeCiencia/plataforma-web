@@ -21,7 +21,7 @@ import {
 
 export default function ExperimentosView({ onNavigate }) {
   const { experimentos, setActiveExpId } = useData();
-  const [categoriaFiltro, setCategoriaFiltro] = useState('Todas');
+  const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExp, setSelectedExp] = useState(null);
   
@@ -33,10 +33,27 @@ export default function ExperimentosView({ onNavigate }) {
   const [hipotesisSeleccionada, setHipotesisSeleccionada] = useState(null);
   const [experimentoFinalizado, setExperimentoFinalizado] = useState(false);
 
-  const categorias = ['Todas', 'Química', 'Física', 'Electricidad', 'Aeroespacial'];
+  const categorias = [
+    'Todos',
+    'Taller de Robótica',
+    'Ciencias Tecnológicas (Mundo Eléctrico)',
+    'Ciencias Tecnológicas (Mundo Magnético)',
+    'Ciencias Tecnológicas (Mundo Verde)',
+    'Ciencias Tecnológicas (Mundo Digital)'
+  ];
 
   const experimentosFiltrados = experimentos.filter(exp => {
-    const coincideCat = categoriaFiltro === 'Todas' || exp.categoria.toLowerCase() === categoriaFiltro.toLowerCase();
+    let coincideCat = categoriaFiltro === 'Todos';
+    if (!coincideCat) {
+      const expCat = (exp.categoria || '').trim().toLowerCase();
+      const filtro = categoriaFiltro.toLowerCase();
+      coincideCat = expCat === filtro ||
+        (filtro.includes('eléctrico') && (expCat.includes('eléctric') || expCat.includes('electricidad'))) ||
+        (filtro.includes('robótica') && expCat.includes('robótica')) ||
+        (filtro.includes('magnético') && expCat.includes('magnétic')) ||
+        (filtro.includes('verde') && expCat.includes('verde')) ||
+        (filtro.includes('digital') && expCat.includes('digital'));
+    }
     const coincideSearch = exp.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            exp.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
     return coincideCat && coincideSearch;
@@ -458,9 +475,76 @@ export default function ExperimentosView({ onNavigate }) {
                     {selectedExp.pasos[pasoActual].titulo}
                   </h3>
 
-                  <p style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px' }}>
+                  <p style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '20px' }}>
                     {selectedExp.pasos[pasoActual].texto}
                   </p>
+
+                  {/* Piezas requeridas si es montaje de robótica */}
+                  {selectedExp.pasos[pasoActual].piezasRequeridas && (
+                    <div style={{
+                      marginBottom: '20px',
+                      padding: '14px 16px',
+                      background: 'rgba(0, 229, 255, 0.06)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(0, 229, 255, 0.2)'
+                    }}>
+                      <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#00e5ff', textTransform: 'uppercase', marginBottom: '8px' }}>
+                        🧩 Piezas requeridas para esta fase:
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {selectedExp.pasos[pasoActual].piezasRequeridas.map((pieza, idx) => (
+                          <span key={idx} style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            background: 'rgba(15, 23, 42, 0.9)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            fontSize: '0.82rem',
+                            color: '#ffffff',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}>
+                            <span style={{ color: '#00e5ff', fontWeight: 800 }}>{pieza.cantidad}x</span>
+                            <span>{pieza.nombre}</span>
+                            {pieza.color && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>({pieza.color})</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Enlaces de Robótica 3D / PDF si aplica */}
+                  {(selectedExp.visor3dUrl || selectedExp.pdfManualUrl) && (
+                    <div style={{
+                      marginBottom: '20px',
+                      display: 'flex',
+                      gap: '10px',
+                      flexWrap: 'wrap'
+                    }}>
+                      {selectedExp.visor3dUrl && (
+                        <a
+                          href={selectedExp.visor3dUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-outline"
+                          style={{ fontSize: '0.8rem', padding: '6px 14px', borderColor: '#00e5ff', color: '#00e5ff' }}
+                        >
+                          🪐 Abrir Visor 3D Interactivo
+                        </a>
+                      )}
+                      {selectedExp.pdfManualUrl && (
+                        <a
+                          href={selectedExp.pdfManualUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-outline"
+                          style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+                        >
+                          📄 Descargar Manual PDF VEX
+                        </a>
+                      )}
+                    </div>
+                  )}
 
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <button

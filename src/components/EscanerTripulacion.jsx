@@ -26,6 +26,7 @@ import {
 
 export default function EscanerTripulacion() {
   const [selectedCharacter, setSelectedCharacter] = useState(CREW_PRESETS[0]);
+  const [activePose, setActivePose] = useState('frontal');
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(100);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -96,6 +97,7 @@ export default function EscanerTripulacion() {
   // Cargar preset de personaje
   const handleSelectPreset = (preset) => {
     if (isScanning) return;
+    setActivePose('frontal');
     triggerScan(preset);
   };
 
@@ -429,7 +431,7 @@ Nivel de Seguridad: ${selectedCharacter.nivelSeguridad || 'Perfil Oficial'}`;
                 padding: '24px'
               }}>
                 <img 
-                  src={uploadedImage || selectedCharacter.avatarImg} 
+                  src={uploadedImage || (selectedCharacter.galeria && selectedCharacter.galeria[activePose]) || selectedCharacter.avatarImg} 
                   alt={selectedCharacter.nombre} 
                   style={{
                     maxHeight: '320px',
@@ -463,6 +465,54 @@ Nivel de Seguridad: ${selectedCharacter.nivelSeguridad || 'Perfil Oficial'}`;
                 <span>STATUS: {isScanning ? 'ESCANEANDO...' : 'BLOQUEO ADN: OK'}</span>
               </div>
             </div>
+
+            {/* SELECTOR DE POSES / EXPRESIONES DE FLOW */}
+            {selectedCharacter.galeria && (
+              <div style={{
+                display: 'flex',
+                gap: '6px',
+                flexWrap: 'wrap',
+                background: 'rgba(3, 10, 22, 0.7)',
+                padding: '6px 10px',
+                borderRadius: '12px',
+                border: '1px solid rgba(0, 229, 255, 0.25)'
+              }}>
+                {[
+                  { key: 'frontal', label: '😊 Frontal' },
+                  { key: 'saludo', label: '👋 Saludo' },
+                  { key: 'pensando', label: '🤔 Pensando' },
+                  { key: 'sorprendido', label: '😲 Sorprendido' },
+                  { key: 'cuerpoCompleto', label: '🧍 Cuerpo Completo' }
+                ].map((pose) => (
+                  <button
+                    key={pose.key}
+                    onClick={() => {
+                      setActivePose(pose.key);
+                      setUploadedImage(null);
+                      playBeep(650, 0.04);
+                    }}
+                    className="tactile-btn"
+                    style={{
+                      flex: '1 1 auto',
+                      padding: '5px 8px',
+                      borderRadius: '8px',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      background: activePose === pose.key && !uploadedImage
+                        ? 'linear-gradient(135deg, rgba(0, 229, 255, 0.3) 0%, rgba(2, 132, 199, 0.4) 100%)'
+                        : 'rgba(255, 255, 255, 0.04)',
+                      border: activePose === pose.key && !uploadedImage
+                        ? '1.5px solid #00e5ff'
+                        : '1px solid rgba(255, 255, 255, 0.08)',
+                      color: activePose === pose.key && !uploadedImage ? '#00e5ff' : '#94a3b8'
+                    }}
+                  >
+                    {pose.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* BOTONES DE ACCIÓN: SUBIDA & CARROUSEL PRESET */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

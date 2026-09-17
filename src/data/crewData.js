@@ -17,7 +17,14 @@ export const CREW_PRESETS = [
       { hex: '#6F4E37', label: 'Cabello Castaño' },
       { hex: '#F1FAEE', label: 'Base / Cuello' }
     ],
-    avatarImg: './assets/images/doctora_frontal.png',
+    avatarImg: './assets/images/characters/electra/frontal.png',
+    galeria: {
+      frontal: './assets/images/characters/electra/frontal.png',
+      saludo: './assets/images/characters/electra/saludo.png',
+      pensando: './assets/images/characters/electra/pensando.png',
+      sorprendido: './assets/images/characters/electra/sorprendido.png',
+      cuerpoCompleto: './assets/images/characters/electra/cuerpo_completo.png'
+    },
     escalaPoder: 94,
     nivelSeguridad: 'Nivel 5 - Directora'
   },
@@ -37,7 +44,14 @@ export const CREW_PRESETS = [
       { hex: '#E9C46A', label: 'Sensores Oculares' },
       { hex: '#333F48', label: 'Orugas Tractoras' }
     ],
-    avatarImg: './assets/images/magneto_frontal.png',
+    avatarImg: './assets/images/characters/magno/frontal.png',
+    galeria: {
+      frontal: './assets/images/characters/magno/frontal.png',
+      saludo: './assets/images/characters/magno/saludo.png',
+      pensando: './assets/images/characters/magno/pensando.png',
+      sorprendido: './assets/images/characters/magno/sorprendido.png',
+      cuerpoCompleto: './assets/images/characters/magno/cuerpo_completo.png'
+    },
     escalaPoder: 88,
     nivelSeguridad: 'Nivel 4 - Especialista'
   },
@@ -57,7 +71,14 @@ export const CREW_PRESETS = [
       { hex: '#2A9D8F', label: 'Herramientas' },
       { hex: '#F1FAEE', label: 'Cremallera & Dientes' }
     ],
-    avatarImg: './assets/images/simio_frontal.png',
+    avatarImg: './assets/images/characters/astro/frontal.png',
+    galeria: {
+      frontal: './assets/images/characters/astro/frontal.png',
+      saludo: './assets/images/characters/astro/saludo.png',
+      pensando: './assets/images/characters/astro/pensando.png',
+      sorprendido: './assets/images/characters/astro/sorprendido.png',
+      cuerpoCompleto: './assets/images/characters/astro/cuerpo_completo.png'
+    },
     escalaPoder: 92,
     nivelSeguridad: 'Nivel 4 - Ingeniero Jefe'
   },
@@ -77,7 +98,14 @@ export const CREW_PRESETS = [
       { hex: '#A8DADC', label: 'Carcasa Superior' },
       { hex: '#F1FAEE', label: 'Detalles Lumínicos' }
     ],
-    avatarImg: './assets/images/aerobot_frontal.png',
+    avatarImg: './assets/images/characters/cosmo/frontal.png',
+    galeria: {
+      frontal: './assets/images/characters/cosmo/frontal.png',
+      saludo: './assets/images/characters/cosmo/saludo.png',
+      pensando: './assets/images/characters/cosmo/pensando.png',
+      sorprendido: './assets/images/characters/cosmo/sorprendido.png',
+      cuerpoCompleto: './assets/images/characters/cosmo/cuerpo_completo.png'
+    },
     escalaPoder: 82,
     nivelSeguridad: 'Nivel 3 - Explorador'
   },
@@ -97,7 +125,14 @@ export const CREW_PRESETS = [
       { hex: '#E9C46A', label: 'Visor Táctico' },
       { hex: '#52B788', label: 'Líneas de Energía' }
     ],
-    avatarImg: './assets/images/cyberex_frontal.png',
+    avatarImg: './assets/images/characters/vector/frontal.png',
+    galeria: {
+      frontal: './assets/images/characters/vector/frontal.png',
+      saludo: './assets/images/characters/vector/saludo.png',
+      pensando: './assets/images/characters/vector/pensando.png',
+      sorprendido: './assets/images/characters/vector/sorprendido.png',
+      cuerpoCompleto: './assets/images/characters/vector/cuerpo_completo.png'
+    },
     escalaPoder: 90,
     nivelSeguridad: 'Nivel 4 - Guardián'
   },
@@ -117,7 +152,14 @@ export const CREW_PRESETS = [
       { hex: '#52B788', label: 'Sensores de Suelo' },
       { hex: '#333F48', label: 'Puntas de Agarre' }
     ],
-    avatarImg: './assets/images/spider_frontal.png',
+    avatarImg: './assets/images/characters/pixel/frontal.png',
+    galeria: {
+      frontal: './assets/images/characters/pixel/frontal.png',
+      saludo: './assets/images/characters/pixel/saludo.png',
+      pensando: './assets/images/characters/pixel/pensando.png',
+      sorprendido: './assets/images/characters/pixel/sorprendido.png',
+      cuerpoCompleto: './assets/images/characters/pixel/cuerpo_completo.png'
+    },
     escalaPoder: 80,
     nivelSeguridad: 'Nivel 3 - Sonda'
   }
